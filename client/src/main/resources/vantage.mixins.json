@@ -1,0 +1,31 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.vantage.client.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "AbstractClientPlayerMixin",
+    "CameraMixin",
+    "EntityMixin",
+    "EntityRenderDispatcherMixin",
+    "EnvironmentAttributeProbeMixin",
+    "FramerateLimitTrackerMixin",
+    "GameRendererMixin",
+    "ItemEntityRendererMixin",
+    "ItemInHandRendererMixin",
+    "KeyboardHandlerMixin",
+    "LevelMixin",
+    "LightTextureMixin",
+    "LivingEntityMixin",
+    "MinecraftMixin",
+    "MouseHandlerMixin",
+    "MultiPlayerGameModeMixin",
+    "OverlayTextureAccessor",
+    "ParticleEngineMixin",
+    "ScreenEffectRendererMixin",
+    "WaterFogEnvironmentMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,10 @@
+.gradle/
+build/
+out/
+*.iml
+.idea/
+.vscode/
+client/run/
+client/run-smoke/
+launcher/build/
+*.log

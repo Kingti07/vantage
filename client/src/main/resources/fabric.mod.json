@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "vantage",
+  "version": "${version}",
+  "name": "Vantage Client",
+  "description": "A modular PvP client: custom main menu, HUD editor, PvP and visual modules, keybind manager and an integrated Modrinth mod browser.",
+  "authors": ["Vantage contributors"],
+  "license": "MIT",
+  "icon": "assets/vantage/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["dev.vantage.client.VantageClient"]
+  },
+  "mixins": ["vantage.mixins.json"],
+  "accessWidener": "vantage.accesswidener",
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "~${minecraft_version}",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

@@ -1,0 +1,24 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}" apply false
+}
+
+subprojects {
+	group = project.maven_group
+	version = project.project_version
+
+	repositories {
+		mavenCentral()
+	}
+
+	plugins.withType(JavaPlugin).configureEach {
+		java {
+			toolchain {
+				languageVersion = JavaLanguageVersion.of(21)
+			}
+		}
+		tasks.withType(JavaCompile).configureEach {
+			options.encoding = 'UTF-8'
+			options.release = 21
+		}
+	}
+}

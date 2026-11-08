@@ -1,0 +1,27 @@
+plugins {
+	id 'java-library'
+}
+
+base {
+	archivesName = 'vantage-common'
+}
+
+dependencies {
+	// Both are provided at runtime: by Minecraft inside the game, and by the launcher's own dependencies.
+	compileOnly "com.google.code.gson:gson:${gson_version}"
+	compileOnly "org.slf4j:slf4j-api:${slf4j_version}"
+
+	// Pure-Java WebP decoder: most Modrinth icons and screenshots are WebP, which neither JavaFX nor
+	// Minecraft's image loader can read.
+	api "com.twelvemonkeys.imageio:imageio-webp:${twelvemonkeys_version}"
+
+	testImplementation "com.google.code.gson:gson:${gson_version}"
+	testImplementation "org.slf4j:slf4j-api:${slf4j_version}"
+	testImplementation platform("org.junit:junit-bom:${junit_version}")
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+	useJUnitPlatform()
+}

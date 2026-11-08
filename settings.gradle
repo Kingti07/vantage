@@ -1,0 +1,17 @@
+pluginManagement {
+	repositories {
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+		gradlePluginPortal()
+	}
+}
+
+rootProject.name = 'vantage'
+
+// common   – pure Java library shared by launcher and in-game client (Modrinth, auth, config, mod management)
+// launcher – JavaFX desktop launcher (accounts, installation, launching, mod browser)
+// client   – Fabric mod that runs inside Minecraft (main menu, HUD, PvP modules, in-game mod browser)
+include 'common', 'launcher', 'client'

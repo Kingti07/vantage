@@ -1,0 +1,94 @@
+plugins {
+	id 'application'
+}
+
+base {
+	archivesName = 'vantage-launcher'
+}
+
+// JavaFX ships per-platform native jars. Build for the current OS by default,
+// or cross-build with -PjavafxPlatform=win|mac|mac-aarch64|linux|linux-aarch64.
+def detectPlatform = {
+	def os = System.getProperty('os.name').toLowerCase()
+	def arch = System.getProperty('os.arch').toLowerCase()
+	def arm = arch.contains('aarch64') || arch.contains('arm64')
+	if (os.contains('win')) return 'win'
+	if (os.contains('mac')) return arm ? 'mac-aarch64' : 'mac'
+	return arm ? 'linux-aarch64' : 'linux'
+}
+def javafxPlatform = project.findProperty('javafxPlatform') ?: detectPlatform()
+
+configurations {
+	bundledClientMod {
+		canBeConsumed = false
+		canBeResolved = true
+	}
+}
+
+dependencies {
+	implementation project(':common')
+	implementation "com.google.code.gson:gson:${gson_version}"
+	implementation "org.slf4j:slf4j-api:${slf4j_version}"
+	runtimeOnly "org.slf4j:slf4j-simple:${slf4j_version}"
+
+	['base', 'graphics', 'controls'].each { module ->
+		implementation "org.openjfx:javafx-${module}:${javafx_version}:${javafxPlatform}"
+	}
+
+	bundledClientMod project(path: ':client', configuration: 'clientModJar')
+
+	testImplementation platform("org.junit:junit-bom:${junit_version}")
+	testImplementation 'org.junit.jupiter:junit-jupiter'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+	useJUnitPlatform()
+}
+
+application {
+	mainClass = 'dev.vantage.launcher.Main'
+	applicationDefaultJvmArgs = ['-Xmx512m']
+}
+
+// The in-game client mod is bundled inside the launcher and installed into the instance on launch.
+processResources {
+	from(configurations.bundledClientMod) {
+		into 'bundled'
+		rename { 'vantage-client.jar' }
+	}
+	def props = [version: project.version, minecraft_version: minecraft_version, loader_version: loader_version]
+	inputs.properties props
+	filesMatching('launcher.properties') {
+		expand props
+	}
+}
+
+// Single runnable jar: java -jar vantage-launcher-<version>-all.jar
+tasks.register('fatJar', Jar) {
+	group = 'build'
+	description = 'Builds a self-contained launcher jar for the selected JavaFX platform.'
+	archiveClassifier = "all-${javafxPlatform}"
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	manifest {
+		attributes 'Main-Class': application.mainClass.get(), 'Implementation-Version': project.version
+	}
+	from sourceSets.main.output
+	dependsOn configurations.runtimeClasspath
+	from {
+		configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+	}
+	exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'module-info.class', 'META-INF/versions/*/module-info.class'
+}
+
+tasks.named('assemble') { dependsOn 'fatJar' }
+
+// Developer integration check of the complete install + launch pipeline (see LaunchSmoke).
+tasks.register('launchSmoke', JavaExec) {
+	group = 'verification'
+	description = 'Installs Minecraft + Fabric + Vantage into a throwaway folder and starts the in-game smoke test.'
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'dev.vantage.launcher.LaunchSmoke'
+	def dir = project.findProperty('smokeDir') ?: layout.buildDirectory.dir('launch-smoke').get().asFile.absolutePath
+	args dir
+}

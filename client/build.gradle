@@ -1,0 +1,64 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap'
+}
+
+base {
+	archivesName = 'vantage-client'
+}
+
+version = "${project_version}+mc${minecraft_version}"
+
+loom {
+	accessWidenerPath = file('src/main/resources/vantage.accesswidener')
+	runs {
+		client {
+			// Forces every mixin target to be loaded at startup so broken injections fail fast in dev.
+			vmArg '-Dvantage.mixinAudit=true'
+		}
+		// Automated walk-through of every Vantage screen plus a test world; saves screenshots and exits.
+		smokeTest {
+			inherit client
+			name 'Smoke Test'
+			vmArg '-Dvantage.mixinAudit=true'
+			vmArg '-Dvantage.smokeTest=true'
+			runDir 'run-smoke'
+		}
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${minecraft_version}"
+	// Official Mojang names: the same names Minecraft itself uses from 26.1 onwards, which keeps porting cheap.
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+	implementation project(':common')
+	include project(':common')
+	// Jar-in-jar for the WebP decoder used by common (include is not transitive, so list every module).
+	['imageio-webp', 'imageio-core', 'imageio-metadata'].each {
+		include "com.twelvemonkeys.imageio:${it}:${twelvemonkeys_version}"
+	}
+	['common-lang', 'common-io', 'common-image'].each {
+		include "com.twelvemonkeys.common:${it}:${twelvemonkeys_version}"
+	}
+}
+
+processResources {
+	def props = [version: project.version, minecraft_version: minecraft_version, loader_version: loader_version]
+	inputs.properties props
+	filesMatching('fabric.mod.json') {
+		expand props
+	}
+}
+
+// Exposes the finished (remapped) mod jar so the launcher can bundle it.
+configurations {
+	clientModJar {
+		canBeConsumed = true
+		canBeResolved = false
+	}
+}
+artifacts {
+	clientModJar(tasks.named('remapJar'))
+}
