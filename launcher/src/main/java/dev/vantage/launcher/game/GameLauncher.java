@@ -10,6 +10,7 @@ import dev.vantage.common.util.Json;
 import dev.vantage.launcher.game.GameInstaller.PreparedGame;
 import dev.vantage.launcher.game.MojangModels.Rule;
 import dev.vantage.launcher.settings.Instance;
+import dev.vantage.launcher.settings.LauncherSettings;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +28,8 @@ import java.util.regex.Pattern;
  */
 public final class GameLauncher {
 	private static final Pattern PLACEHOLDER = Pattern.compile("\\$\\{([a-zA-Z_]+)}");
+	/** A garbage collector chosen by the user in the extra JVM arguments; then Vantage adds none of its own. */
+	private static final Pattern GC_FLAG = Pattern.compile("-XX:[+]Use\\w*GC");
 
 	/** Optional "Quick Play" target: join a server or open a world directly after start-up. */
 	public record QuickPlay(String multiplayerAddress, String singleplayerWorld) {
@@ -38,6 +41,11 @@ public final class GameLauncher {
 
 	public static List<String> buildCommand(PreparedGame game, Instance instance, Path gameDir, MinecraftAccount account,
 		String clientId, Path launcherDir, QuickPlay quickPlay) {
+		return buildCommand(game, instance, gameDir, account, clientId, launcherDir, quickPlay, LauncherSettings.GcMode.BALANCED);
+	}
+
+	public static List<String> buildCommand(PreparedGame game, Instance instance, Path gameDir, MinecraftAccount account,
+		String clientId, Path launcherDir, QuickPlay quickPlay, LauncherSettings.GcMode gcMode) {
 		Map<String, Boolean> features = new HashMap<>();
 		features.put("has_custom_resolution", instance.customResolution && !instance.fullscreen);
 		features.put("is_demo_user", false);
@@ -77,12 +85,14 @@ public final class GameLauncher {
 
 		List<String> command = new ArrayList<>();
 		command.add(game.javaExecutable().toString());
+		List<String> userArgs = splitArgs(instance.extraJvmArgs);
 		command.add("-Xmx" + instance.memoryMb + "M");
-		command.add("-Xms" + Math.min(instance.memoryMb, 1024) + "M");
-		// Sensible G1 defaults for a game client: short pauses matter more than throughput.
-		command.add("-XX:+UseG1GC");
-		command.add("-XX:MaxGCPauseMillis=50");
-		command.add("-XX:+ParallelRefProcEnabled");
+		// The whole heap from the start: growing it later costs pauses (stutter) while playing.
+		command.add("-Xms" + instance.memoryMb + "M");
+		if (userArgs.stream().noneMatch(arg -> GC_FLAG.matcher(arg).matches())) {
+			int javaMajor = game.version().javaVersion() != null ? game.version().javaVersion().majorVersion() : 0;
+			command.addAll(gcFlags(gcMode, javaMajor));
+		}
 		command.add("-D" + VantageInfo.PROP_LAUNCHER_DIR + "=" + launcherDir);
 		if (clientId != null && !clientId.isBlank()) {
 			command.add("-D" + VantageInfo.PROP_MSA_CLIENT_ID + "=" + clientId);
@@ -90,9 +100,7 @@ public final class GameLauncher {
 		if (game.loggingConfig() != null && game.loggingArgument() != null) {
 			command.add(game.loggingArgument().replace("${path}", game.loggingConfig().toString()));
 		}
-		for (String arg : splitArgs(instance.extraJvmArgs)) {
-			command.add(arg);
-		}
+		command.addAll(userArgs);
 		var arguments = game.version().arguments();
 		if (arguments != null && arguments.jvm() != null && !arguments.jvm().isEmpty()) {
 			addArguments(command, arguments.jvm(), features, values);
@@ -114,6 +122,19 @@ public final class GameLauncher {
 			command.add("--fullscreen");
 		}
 		return command;
+	}
+
+	/**
+	 * Garbage collector settings for a game client, where short pauses (no stutter) matter more than throughput.
+	 * BALANCED: G1 tuned like the widely used client flags (larger young generation, reserve, 16 MB regions).
+	 * LOW_LATENCY: generational ZGC (Java 21+), with pauses below a millisecond but more CPU and memory use.
+	 */
+	static List<String> gcFlags(LauncherSettings.GcMode mode, int javaMajor) {
+		if (mode == LauncherSettings.GcMode.LOW_LATENCY && (javaMajor == 0 || javaMajor >= 21)) {
+			return List.of("-XX:+UseZGC", "-XX:+ZGenerational");
+		}
+		return List.of("-XX:+UseG1GC", "-XX:+ParallelRefProcEnabled", "-XX:MaxGCPauseMillis=50", "-XX:+UnlockExperimentalVMOptions",
+			"-XX:G1NewSizePercent=20", "-XX:G1ReservePercent=20", "-XX:G1HeapRegionSize=16M", "-XX:+DisableExplicitGC");
 	}
 
 	public static Process start(List<String> command, Path gameDir) throws IOException {

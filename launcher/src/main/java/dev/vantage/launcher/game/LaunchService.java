@@ -100,9 +100,13 @@ public final class LaunchService {
 		// Last point at which cancelling is possible; after this the game process exists.
 		progress.checkCancelled();
 		progress.status("Starting Minecraft " + instance.minecraftVersion);
-		List<String> command = GameLauncher.buildCommand(game, instance, gameDir, account, clientId, paths.root(), quickPlay);
+		List<String> command = GameLauncher.buildCommand(game, instance, gameDir, account, clientId, paths.root(), quickPlay, settings.gcMode);
+		WindowsTuning.preferHighPerformanceGpu(game.javaExecutable(), settings.preferHighPerformanceGpu);
 		LOGGER.info("Launching: {}", GameLauncher.describe(command, account));
 		Process process = GameLauncher.start(command, gameDir);
+		if (settings.highPriority) {
+			WindowsTuning.raisePriority(process);
+		}
 		Thread pump = new Thread(() -> pump(process.getInputStream(), output), "vantage-game-output");
 		pump.setDaemon(true);
 		pump.start();

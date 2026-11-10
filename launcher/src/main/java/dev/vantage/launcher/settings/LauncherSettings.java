@@ -12,6 +12,9 @@ import java.util.regex.Pattern;
 public final class LauncherSettings {
 	public enum AfterLaunch {KEEP_OPEN, MINIMIZE, CLOSE}
 
+	/** Garbage collector for the game, see GameLauncher.gcFlags. */
+	public enum GcMode {BALANCED, LOW_LATENCY}
+
 	public static final String DEFAULT_ACCENT = "#7C5CFF";
 	public static final int DEFAULT_DOWNLOAD_THREADS = 8;
 	public static final int MIN_DOWNLOAD_THREADS = 2;
@@ -39,6 +42,12 @@ public final class LauncherSettings {
 	public boolean showSnapshots = false;
 	public int downloadThreads = DEFAULT_DOWNLOAD_THREADS;
 	public boolean consoleOnLaunch = false;
+	/** Memory management of the game: tuned G1 (default) or generational ZGC. */
+	public GcMode gcMode = GcMode.BALANCED;
+	/** Start the game with "above normal" CPU priority (Windows). */
+	public boolean highPriority = true;
+	/** Ask Windows to run the game on the dedicated graphics card (laptops with two GPUs). */
+	public boolean preferHighPerformanceGpu = false;
 	/** Size and position of the launcher window, restored on the next start. */
 	public WindowState window = new WindowState();
 	/** Page that was open when the launcher was closed. */
@@ -105,6 +114,10 @@ public final class LauncherSettings {
 		}
 		if (downloadThreads < MIN_DOWNLOAD_THREADS || downloadThreads > MAX_DOWNLOAD_THREADS) {
 			downloadThreads = DEFAULT_DOWNLOAD_THREADS;
+			changed = true;
+		}
+		if (gcMode == null) {
+			gcMode = GcMode.BALANCED;
 			changed = true;
 		}
 		if (window == null) {

@@ -41,7 +41,37 @@ public final class SettingsPage implements Page {
 		this.window = window;
 		root.getStyleClass().add("page");
 		root.getChildren().add(new VBox(4, Ui.label("Settings", "h1"), Ui.label("Changes are saved automatically.", "muted")));
-		root.getChildren().addAll(appearance(), launching(), signIn(), java(), updates(), storage(), about());
+		root.getChildren().addAll(appearance(), launching(), performance(), signIn(), java(), updates(), storage(), about());
+	}
+
+	/** Launcher-side frame rate tweaks; the mods that boost FPS are chosen per installation. */
+	private Node performance() {
+		ToggleSwitch zgc = new ToggleSwitch(settings().gcMode == LauncherSettings.GcMode.LOW_LATENCY);
+		zgc.selectedProperty().addListener((o, a, b) -> {
+			settings().gcMode = b ? LauncherSettings.GcMode.LOW_LATENCY : LauncherSettings.GcMode.BALANCED;
+			save();
+		});
+		ToggleSwitch priority = new ToggleSwitch(settings().highPriority);
+		priority.selectedProperty().addListener((o, a, b) -> {
+			settings().highPriority = b;
+			save();
+		});
+		ToggleSwitch gpu = new ToggleSwitch(settings().preferHighPerformanceGpu);
+		gpu.selectedProperty().addListener((o, a, b) -> {
+			settings().preferHighPerformanceGpu = b;
+			save();
+		});
+		boolean windows = dev.vantage.launcher.game.WindowsTuning.supported();
+		priority.setDisable(!windows);
+		gpu.setDisable(!windows);
+		return section("Performance",
+			setting("Low-latency memory management", "Uses the ZGC garbage collector: almost no stutter from memory clean-up, "
+				+ "but a little more CPU and memory. Off uses a tuned G1 collector, which suits most PCs.", zgc),
+			setting("Higher game priority", "Starts Minecraft with \"above normal\" CPU priority so programs in the background "
+				+ "disturb it less." + (windows ? "" : " Windows only."), priority),
+			setting("Use the high-performance graphics card", "For laptops with two graphics chips: asks Windows to run "
+				+ "Minecraft on the dedicated one, which can multiply the frame rate. Changes the per-app setting under "
+				+ "Windows Settings > System > Display > Graphics; turning this off removes it again." + (windows ? "" : " Windows only."), gpu));
 	}
 
 	private LauncherSettings settings() {
