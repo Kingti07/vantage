@@ -155,12 +155,16 @@ public final class VantageClient implements ClientModInitializer {
 
 	private void registerEvents() {
 		dev.vantage.client.dev.DevSmokeTest smokeTest = dev.vantage.client.dev.DevSmokeTest.enabled() ? new dev.vantage.client.dev.DevSmokeTest() : null;
+		dev.vantage.client.dev.DevBenchmark benchmark = dev.vantage.client.dev.DevBenchmark.enabled() ? new dev.vantage.client.dev.DevBenchmark() : null;
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			modules.tick();
 			combat.tick();
 			config.tick();
 			if (smokeTest != null) {
 				smokeTest.tick();
+			}
+			if (benchmark != null) {
+				benchmark.tick();
 			}
 		});
 		ClientLifecycleEvents.CLIENT_STARTED.register(client -> {

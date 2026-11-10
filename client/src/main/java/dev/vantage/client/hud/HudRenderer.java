@@ -12,6 +12,7 @@ public final class HudRenderer {
 	}
 
 	public static void render(GuiGraphics g, DeltaTracker tracker) {
+		dev.vantage.client.dev.DevBenchmark.onFrame();
 		Minecraft mc = Minecraft.getInstance();
 		if (mc.options.hideGui || mc.player == null || mc.screen instanceof HudEditorScreen) {
 			return;

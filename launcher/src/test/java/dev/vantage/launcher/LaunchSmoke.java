@@ -1,6 +1,9 @@
 package dev.vantage.launcher;
 
+import dev.vantage.common.VantageInfo;
 import dev.vantage.common.auth.MinecraftAccount;
+import dev.vantage.common.mods.InstallPlan;
+import dev.vantage.common.mods.ModManager;
 import dev.vantage.common.util.ProgressListener;
 import dev.vantage.launcher.game.GameLauncher;
 import dev.vantage.launcher.game.LaunchService;
@@ -46,6 +49,20 @@ public final class LaunchSmoke {
 		if (context.accounts.accounts().isEmpty()) {
 			context.accounts.put(new MinecraftAccount(UUID.randomUUID().toString().replace("-", ""), "VantageSmoke", null,
 				"invalid-test-token", Long.MAX_VALUE, "0", null));
+		}
+
+		// Optional second argument: comma-separated Modrinth slugs to install first (compatibility checks, e.g. "sodium,lithium").
+		if (args.length > 1 && !args[1].isBlank()) {
+			ModManager mods = new ModManager(gameDir.resolve("mods"), context.modrinth, instance.minecraftVersion, VantageInfo.LOADER);
+			for (String slug : args[1].split(",")) {
+				InstallPlan plan = mods.plan(slug.trim(), null);
+				if (plan.canInstall()) {
+					mods.execute(plan, ProgressListener.NONE);
+					System.out.println("[smoke] installed " + slug.trim());
+				} else {
+					System.out.println("[smoke] cannot install " + slug.trim() + ": " + plan.problems());
+				}
+			}
 		}
 
 		ProgressListener progress = new ProgressListener() {

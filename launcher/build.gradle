@@ -87,7 +87,19 @@ tasks.register('launchSmoke', JavaExec) {
 	classpath = sourceSets.test.runtimeClasspath
 	mainClass = 'dev.vantage.launcher.LaunchSmoke'
 	def dir = project.findProperty('smokeDir') ?: layout.buildDirectory.dir('launch-smoke').get().asFile.absolutePath
-	args dir
+	// -PsmokeMods=sodium,lithium installs extra Modrinth mods first, to test compatibility with them.
+	args dir, project.findProperty('smokeMods') ?: ''
+}
+
+// Developer FPS benchmark (see LaunchBenchmark): -PbenchDir=<folder> -PbenchProfile=vanilla|pack|vulkan -PbenchSeconds=30
+tasks.register('launchBenchmark', JavaExec) {
+	group = 'verification'
+	description = 'Measures FPS of Vantage in a fixed test world, optionally with performance mods.'
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'dev.vantage.launcher.LaunchBenchmark'
+	args(project.findProperty('benchDir') ?: layout.buildDirectory.dir('benchmark').get().asFile.absolutePath,
+		project.findProperty('benchProfile') ?: 'vanilla', project.findProperty('benchSeconds') ?: '30',
+		project.findProperty('benchRd') ?: '12', project.findProperty('benchMods') ?: '')
 }
 
 // Portable version: the launcher together with its own Java runtime, so players need no installed Java.
