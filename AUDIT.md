@@ -372,3 +372,28 @@ Bestehende Nutzerdaten werden in jedem Schritt übernommen oder automatisch umge
    Java-Laufzeit, kein Installer nötig. Ein Windows-Installer (`.msi`) wäre möglich, braucht aber das WiX-Toolset im
    Build. Eine Code-Signatur braucht ein kostenpflichtiges Zertifikat und ist deshalb nicht Teil des Plans.
 5. **Linter (A7):** Empfehlung: Checkstyle, das Gradle schon mitbringt, also kein neues Werkzeug von außen.
+
+## 7. Umsetzungsstand (10.11.2026, Branch `overhaul/launcher`)
+
+Alle Entscheidungen aus Abschnitt 6 wurden mit den Empfehlungen umgesetzt. Ausgangsstand: Tag `baseline-before-overhaul`.
+
+| Fund | Stand | Commit |
+|---|---|---|
+| F1, F5, F7, A3 | Erledigt: defekte Dateien werden gesichert, Werte geprüft, Konfig-Version und Migration, Konten werden vor dem Schreiben neu gelesen | `d4e2b2f` |
+| F2, P1, P3, P4, U3 | Erledigt: Lese-Zeitlimit, Fortsetzen, schneller Offline-Fall, Abbrechen, Größe, Geschwindigkeit und Restzeit | `810d408` |
+| F3, F4, F12, S2, S3, P6, A2 | Erledigt: SHA-256-Prüfung, nur geprüfte Updates, Rückfall bei kaputtem Update, Version an einer Stelle, Aufräumen, Log-Rotation. Eine Signatur zusätzlich zur Prüfsumme ist **nicht** umgesetzt (optional) | `299788e` |
+| S1 | Erledigt: Tokens mit AES-256-GCM verschlüsselt, Schlüssel per DPAPI, Schlüsselbund oder Secret Service | `c75873e` |
+| U1, U2, U4, U8, F10, F11, A5, P2 | Erledigt: Klartext-Fehler, Meldungen über Dialogen, lesbare Konsole, Absturz-Dialog | `257d8ff` |
+| A1, A4, A6, A8 | Erledigt: Logik aus der Oberfläche gelöst, toter Code entfernt, Konstanten, 0 Compiler-Warnungen. Der Spielstart wird weiter vom Hauptfenster angestoßen, die Logik liegt aber in `LaunchService` | `3079ece` |
+| U5, U7, F6, F8, F9, G1, G2 | Erledigt: Fenster merken, Tastatur, Nachfrage beim Schließen, alte Versionen ausgeblendet, Ordnerprüfung, Offline-Start, RAM-Hinweis | `9e72885` |
+| S4, S6, F13 | Erledigt: Java-Dateiliste geprüft, Pfade begrenzt, alte Java-Dateien entfernt | `7b63d6b` |
+| A7, B2, S8 | Erledigt: Checkstyle, Warnungen als Fehler, CI mit OSV-Prüfung | `c817816` |
+| B1, B3, B4 | Erledigt: portable ZIP mit eigenem Java, App-Icon, keine JavaFX-Warnung. Ein Windows-Installer (`.msi`) ist **nicht** umgesetzt | `40d1d2e` |
+| S5 | **Fehlalarm:** Skin-Adressen wurden bereits auf https umgeschrieben | – |
+| P5 | **Fehlalarm:** der Modrinth-Zwischenspeicher entfernt abgelaufene Einträge bereits ab 500 Einträgen | – |
+| S7 | Bewusst so gelassen wie beim offiziellen Launcher und in der README dokumentiert | – |
+| U6 | Bewusst offen (Entscheidung 3: vorerst Englisch) | – |
+
+Gefunden und behoben während der Umsetzung:
+- Bei einem kaputten Update zeigte Windows-Java (`javaw.exe`) ein Fehlerfenster und blockierte den Wechsel.
+- Ohne Weitergabe der `vantage.*`-Optionen hätte ein Update in einem anderen Datenordner gestartet.

@@ -5,6 +5,13 @@ Status legend: **Done** = implemented and exercised by the automated checks or u
 **Partial** = works, with the stated limitation · **Via mod** = provided by installing an independent mod from
 Modrinth through Vantage's dependency-checked installer · **Not done**.
 
+## Launcher overhaul (2026-11-10)
+
+The launcher was audited and overhauled; see [AUDIT.md](AUDIT.md) and [CHANGELOG.md](CHANGELOG.md). Verified on
+Windows 11 with Java 21: 67 unit tests, `launchSmoke` on fresh folders (including a path with spaces, umlaut and
+parentheses) and offline, the update hand-over to a good and to a corrupt jar, the portable Windows package, and UI
+snapshots of every page online and offline.
+
 ## What the automated runs verified (2026-11-08, Windows 11, Java 21)
 
 * `./gradlew test` – 10 unit tests pass (version predicates, mod analysis, enable/disable/remove, launch arguments,
@@ -41,18 +48,18 @@ damage indicators, hit particles). Those are marked "Done (untested live)".
 | Requirement | Status | Notes |
 |---|---|---|
 | Modern, customizable UI | Done | Dark theme, accent colours, animations toggle |
-| Microsoft authentication | Done (untested live) | Needs an Azure app id approved for the Minecraft API (see README) |
+| Microsoft authentication | Done (untested live) | Needs the Azure app approved for the Minecraft API (pending). Tokens stored encrypted (DPAPI / Keychain / Secret Service) |
 | Account management / switching | Done (untested live) | Add, remove, select; in-game switch restarts through the launcher |
 | Minecraft version selection | Done | Mojang manifest, releases (+ snapshots toggle) |
 | Fabric version selection | Done | Fabric meta, "latest stable" or a pinned version |
 | RAM allocation | Done | Slider bounded by system memory |
 | Java runtime management | Done | Mojang runtimes per version (download, verify, delete) or custom path with version test |
-| Launch button, status, progress bar | Done | Task bar with per-step status and progress; console page |
+| Launch button, status, progress bar | Done | Task bar per operation with size, speed, remaining time and Cancel; readable console with filter; crash dialog |
 | Game directory management | Done | Per installation, custom folder, open folder |
 | Installed mod overview | Done | Icons, versions, source, problems, enable/disable, remove |
-| Download & update management | Done | Mod update detection on open + "Update all"; "Repair files" re-verifies every game file |
+| Download & update management | Done | Resumable, stall-proof downloads; mod update detection + "Update all"; "Repair files" re-verifies every game file |
 | Client settings | Done | Settings page (appearance, launching, sign-in, Java, updates, storage) |
-| Automatic self-update | Done (untested live) | GitHub Releases channel configured in settings; staged jar takes over on next start |
+| Automatic self-update | Done (hand-over tested locally) | SHA-256-verified GitHub releases; staged jar takes over on next start and replaces the old jar; falls back if it does not start. Not yet run against a real newer GitHub release |
 | Quick join a server | Done | Uses Minecraft's Quick Play |
 
 ## 3. Main client interface
