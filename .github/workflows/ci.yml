@@ -1,0 +1,32 @@
+name: CI
+
+# Builds and tests every push and pull request: compile (lint warnings are errors), unit tests, Checkstyle and a
+# check of the launcher's dependencies against the OSV vulnerability database.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build, test and check
+        run: ./gradlew build --console=plain
+
+      - name: Check dependencies for known vulnerabilities
+        run: |
+          ./gradlew -q :launcher:dependencies --configuration runtimeClasspath > launcher-dependencies.txt
+          .github/scripts/osv-check.sh launcher-dependencies.txt

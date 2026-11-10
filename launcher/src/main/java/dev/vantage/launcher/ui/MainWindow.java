@@ -2,7 +2,6 @@ package dev.vantage.launcher.ui;
 
 import dev.vantage.common.VantageInfo;
 import dev.vantage.common.auth.MinecraftAccount;
-import dev.vantage.common.util.ProgressListener;
 import dev.vantage.launcher.LauncherContext;
 import dev.vantage.launcher.game.GameLauncher;
 import dev.vantage.launcher.game.LaunchService;

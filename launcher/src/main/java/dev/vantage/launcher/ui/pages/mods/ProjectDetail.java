@@ -196,7 +196,8 @@ final class ProjectDetail {
 			return list;
 		}
 		for (Version version : versions.stream().limit(40).toList()) {
-			Label name = Ui.label(version.versionNumber() + (version.name() != null && !version.name().equals(version.versionNumber()) ? " · " + version.name() : ""), "h3");
+			String title = version.versionNumber() + (version.name() != null && !version.name().equals(version.versionNumber()) ? " · " + version.name() : "");
+			Label name = Ui.label(title, "h3");
 			Label meta = Ui.label(String.join(", ", version.loaders()) + " · " + Ui.relativeTime(version.datePublished())
 				+ " · " + Ui.compactNumber(version.downloads()) + " downloads", "small", "muted");
 			Label type = MainWindow.badge(version.versionType(), "release".equals(version.versionType()) ? "success" : "warning");

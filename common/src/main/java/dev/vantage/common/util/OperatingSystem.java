@@ -32,7 +32,7 @@ public enum OperatingSystem {
 
 	public static boolean isArm64() {
 		String arch = System.getProperty("os.arch", "").toLowerCase(Locale.ROOT);
-		return arch.equals("aarch64") || arch.equals("arm64");
+		return "aarch64".equals(arch) || "arm64".equals(arch);
 	}
 
 	public static boolean is64Bit() {

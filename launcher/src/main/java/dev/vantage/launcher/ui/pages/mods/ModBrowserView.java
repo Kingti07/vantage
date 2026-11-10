@@ -166,7 +166,7 @@ public final class ModBrowserView {
 		int token = ++generation;
 		SearchQuery query = new SearchQuery().query(search.getText()).sort(sort.getValue()).page(offset, 20).clientSideOnly(clientOnly.isSelected());
 		String loaderValue = loader.getValue();
-		if (loaderValue != null && !loaderValue.equals("Any loader")) {
+		if (loaderValue != null && !"Any loader".equals(loaderValue)) {
 			query.loader(loaderValue.toLowerCase());
 		}
 		String versionValue = version.getValue();

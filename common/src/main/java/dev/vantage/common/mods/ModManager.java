@@ -130,7 +130,7 @@ public final class ModManager {
 			}
 			for (Map.Entry<String, List<String>> dep : meta.depends().entrySet()) {
 				String depId = dep.getKey();
-				if (depId.equals("minecraft")) {
+				if ("minecraft".equals(depId)) {
 					if (VersionPredicate.anyOf(dep.getValue(), gameVersion) == VersionPredicate.Result.UNSATISFIED) {
 						problems.add(ModProblem.error(ModProblem.Kind.INCOMPATIBLE_GAME_VERSION, file,
 							meta.name() + " requires Minecraft " + String.join(" or ", dep.getValue()) + " (instance: " + gameVersion + ")."));

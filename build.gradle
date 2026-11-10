@@ -22,3 +22,17 @@ subprojects {
 		}
 	}
 }
+
+// Quality gates for the launcher and the shared code (the Fabric client follows Minecraft's own conventions):
+// Checkstyle (config/checkstyle/checkstyle.xml) and every javac lint warning treated as an error.
+configure(subprojects.findAll { it.name in ['common', 'launcher'] }) {
+	apply plugin: 'checkstyle'
+	checkstyle {
+		toolVersion = '12.3.1'
+		configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+		maxWarnings = 0
+	}
+	tasks.withType(JavaCompile).configureEach {
+		options.compilerArgs += ['-Xlint:all', '-Werror']
+	}
+}

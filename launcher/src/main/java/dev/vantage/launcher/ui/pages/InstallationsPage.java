@@ -12,7 +12,6 @@ import dev.vantage.launcher.ui.Overlay;
 import dev.vantage.launcher.ui.Toasts;
 import dev.vantage.launcher.ui.ToggleSwitch;
 import dev.vantage.launcher.ui.Ui;
-import dev.vantage.common.util.ProgressListener;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

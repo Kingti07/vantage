@@ -23,7 +23,7 @@ if echo "$response" | grep -q '"vulns"'; then
 	echo "Known vulnerabilities found (checked $count packages):"
 	i=0
 	for c in $coords; do
-		result=$(echo "$response" | sed -E 's/^\{"results":\[//; s/\]\}$//' | awk -v RS='\},\{' -v n=$i 'NR==n+1')
+		result=$(echo "$response" | sed -E 's/^\{"results":\[//; s/\]\}$//' | awk -v RS='[}],[{]' -v n=$i 'NR==n+1')
 		if echo "$result" | grep -q '"vulns"'; then
 			echo "  $c: $(echo "$result" | grep -oE '"id":"[^"]+"' | cut -d'"' -f4 | tr '\n' ' ')"
 		fi

@@ -35,7 +35,7 @@ public final class VersionPredicate {
 	public static VersionPredicate parse(String predicate) {
 		String text = predicate == null ? "" : predicate.trim();
 		List<Term> terms = new ArrayList<>();
-		if (text.isEmpty() || text.equals("*")) {
+		if (text.isEmpty() || "*".equals(text)) {
 			return new VersionPredicate(terms, text);
 		}
 		for (String part : text.split("\\s+")) {
@@ -97,7 +97,7 @@ public final class VersionPredicate {
 			int wildcard = indexOfWildcard(lower);
 			if (wildcard >= 0) {
 				// "1.21.x" -> [1.21.0, 1.22.0)
-				if (!op.equals("=")) {
+				if (!"=".equals(op)) {
 					return null;
 				}
 				String prefix = lower.substring(0, wildcard);
@@ -134,7 +134,7 @@ public final class VersionPredicate {
 			String[] parts = text.split("\\.");
 			int offset = 0;
 			for (String part : parts) {
-				if (part.equals("x") || part.equals("*")) {
+				if ("x".equals(part) || "*".equals(part)) {
 					return offset;
 				}
 				offset += part.length() + 1;

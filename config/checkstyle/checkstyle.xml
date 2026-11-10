@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+  Checks for the launcher and the shared code. Deliberately pragmatic: it catches real mistakes and keeps the
+  existing style (tabs, braces on the same line), instead of enforcing a foreign code style.
+-->
+<module name="Checker">
+	<property name="charset" value="UTF-8"/>
+	<property name="severity" value="error"/>
+	<module name="NewlineAtEndOfFile">
+		<property name="lineSeparator" value="lf_cr_crlf"/>
+	</module>
+	<module name="LineLength">
+		<property name="max" value="180"/>
+		<!-- SVG icon paths and long string constants are data, not code. -->
+		<property name="ignorePattern" value="^\s*(public static final String \w+ = &quot;|import )"/>
+	</module>
+	<module name="TreeWalker">
+		<property name="tabWidth" value="4"/>
+		<!-- Imports -->
+		<module name="AvoidStarImport"/>
+		<module name="RedundantImport"/>
+		<module name="UnusedImports"/>
+		<module name="IllegalImport"/>
+		<!-- Blocks and statements -->
+		<module name="NeedBraces"/>
+		<module name="EmptyBlock">
+			<property name="option" value="text"/>
+		</module>
+		<module name="EmptyStatement"/>
+		<module name="OneStatementPerLine"/>
+		<module name="MultipleVariableDeclarations"/>
+		<module name="DefaultComesLast"/>
+		<module name="FallThrough"/>
+		<!-- Likely bugs -->
+		<module name="EqualsHashCode"/>
+		<module name="StringLiteralEquality"/>
+		<module name="SimplifyBooleanExpression"/>
+		<module name="SimplifyBooleanReturn"/>
+		<module name="CovariantEquals"/>
+		<module name="EqualsAvoidNull"/>
+		<module name="MissingOverride"/>
+		<!-- Readability -->
+		<module name="UpperEll"/>
+		<module name="ArrayTypeStyle"/>
+		<module name="ModifierOrder"/>
+		<module name="TypeName"/>
+		<module name="MethodName"/>
+		<module name="PackageName"/>
+		<module name="LocalVariableName"/>
+		<module name="MemberName"/>
+		<module name="ParameterName"/>
+		<module name="ConstantName">
+			<!-- Loggers are named LOGGER, other constants UPPER_CASE. -->
+			<property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+		</module>
+	</module>
+</module>

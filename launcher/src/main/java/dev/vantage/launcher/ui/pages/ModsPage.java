@@ -4,7 +4,6 @@ import dev.vantage.common.mods.InstallPlan;
 import dev.vantage.common.mods.ModManager;
 import dev.vantage.common.mods.ModProblem;
 import dev.vantage.common.util.FileUtil;
-import dev.vantage.common.util.ProgressListener;
 import dev.vantage.launcher.settings.Instance;
 import dev.vantage.launcher.ui.Icons;
 import dev.vantage.launcher.ui.MainWindow;

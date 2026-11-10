@@ -21,7 +21,8 @@ import java.util.List;
  */
 final class UiSnapshots {
 	private static final Logger LOGGER = LoggerFactory.getLogger(UiSnapshots.class);
-	private static final List<String> PAGES = List.of("home", "installations", "installation-editor", "mods", "mods-browse", "mods-performance", "accounts", "settings", "console");
+	private static final List<String> PAGES = List.of("home", "installations", "installation-editor", "mods", "mods-browse",
+		"mods-performance", "accounts", "settings", "console");
 
 	private UiSnapshots() {
 	}

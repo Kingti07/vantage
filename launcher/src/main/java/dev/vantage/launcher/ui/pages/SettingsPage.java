@@ -2,7 +2,6 @@ package dev.vantage.launcher.ui.pages;
 
 import dev.vantage.common.VantageInfo;
 import dev.vantage.common.util.FileUtil;
-import dev.vantage.common.util.OperatingSystem;
 import dev.vantage.launcher.game.JavaRuntimeManager;
 import dev.vantage.launcher.settings.LauncherSettings;
 import dev.vantage.launcher.ui.Icons;
