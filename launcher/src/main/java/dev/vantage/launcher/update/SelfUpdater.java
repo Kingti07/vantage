@@ -44,32 +44,55 @@ public final class SelfUpdater {
 		this.paths = paths;
 	}
 
-	/** Returns the newer release for this platform, if any. */
+	/**
+	 * Returns the newest published release (pre-releases included, drafts excluded) that is newer than the
+	 * running version and has a launcher jar for this platform. GitHub's "latest release" endpoint is not used
+	 * because it ignores pre-releases.
+	 */
 	public Optional<Release> check(String repository, String platform) throws IOException {
 		if (repository == null || !repository.matches("[\\w.-]+/[\\w.-]+")) {
 			throw new IOException("No update repository configured (expected \"owner/repo\").");
 		}
-		String body = Http.getString(URI.create("https://api.github.com/repos/" + repository + "/releases/latest"));
-		JsonObject release = JsonParser.parseString(body).getAsJsonObject();
-		String tag = release.get("tag_name").getAsString();
-		SemanticVersion latest = SemanticVersion.tryParse(tag);
-		SemanticVersion current = SemanticVersion.tryParse(VantageInfo.VERSION);
-		if (latest == null || current == null || latest.compareTo(current) <= 0) {
+		String body = Http.getString(URI.create("https://api.github.com/repos/" + repository + "/releases?per_page=30"));
+		return newest(JsonParser.parseString(body).getAsJsonArray(), VantageInfo.VERSION, platform);
+	}
+
+	/** Picks the update from a GitHub release list; package-private for tests. */
+	static Optional<Release> newest(JsonArray releases, String currentVersion, String platform) {
+		SemanticVersion current = SemanticVersion.tryParse(currentVersion);
+		if (current == null) {
 			return Optional.empty();
 		}
 		String suffix = "-all-" + platform + ".jar";
-		JsonArray assets = release.getAsJsonArray("assets");
-		for (JsonElement element : assets) {
-			JsonObject asset = element.getAsJsonObject();
-			if (asset.get("name").getAsString().endsWith(suffix)) {
-				return Optional.of(new Release(latest.toString(),
-					release.has("name") && !release.get("name").isJsonNull() ? release.get("name").getAsString() : tag,
-					release.has("body") && !release.get("body").isJsonNull() ? release.get("body").getAsString() : "",
-					asset.get("browser_download_url").getAsString(), asset.get("size").getAsLong()));
+		Release best = null;
+		SemanticVersion bestVersion = null;
+		for (JsonElement element : releases) {
+			JsonObject release = element.getAsJsonObject();
+			if (release.has("draft") && release.get("draft").getAsBoolean()) {
+				continue;
+			}
+			String tag = release.get("tag_name").getAsString();
+			SemanticVersion version = SemanticVersion.tryParse(tag);
+			if (version == null || version.compareTo(current) <= 0 || (bestVersion != null && version.compareTo(bestVersion) <= 0)) {
+				continue;
+			}
+			for (JsonElement assetElement : release.getAsJsonArray("assets")) {
+				JsonObject asset = assetElement.getAsJsonObject();
+				if (asset.get("name").getAsString().endsWith(suffix)) {
+					String plain = tag.length() > 1 && (tag.charAt(0) == 'v' || tag.charAt(0) == 'V') ? tag.substring(1) : tag;
+					best = new Release(plain,
+						release.has("name") && !release.get("name").isJsonNull() ? release.get("name").getAsString() : tag,
+						release.has("body") && !release.get("body").isJsonNull() ? release.get("body").getAsString() : "",
+						asset.get("browser_download_url").getAsString(), asset.get("size").getAsLong());
+					bestVersion = version;
+					break;
+				}
+			}
+			if (bestVersion != version) {
+				LOGGER.info("Release {} has no asset for platform {}", tag, platform);
 			}
 		}
-		LOGGER.info("Release {} has no asset for platform {}", tag, platform);
-		return Optional.empty();
+		return Optional.ofNullable(best);
 	}
 
 	public Path download(Release release, String platform, ProgressListener listener) throws IOException {
