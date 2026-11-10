@@ -89,3 +89,55 @@ tasks.register('launchSmoke', JavaExec) {
 	def dir = project.findProperty('smokeDir') ?: layout.buildDirectory.dir('launch-smoke').get().asFile.absolutePath
 	args dir
 }
+
+// Portable version: the launcher together with its own Java runtime, so players need no installed Java.
+// jpackage cannot cross-build, so run this on the operating system the package is for:
+//   ./gradlew :launcher:portableZip   ->   build/distributions/vantage-launcher-<version>-portable-<platform>.zip
+// The runtime keeps bin/java (no --strip-native-commands) because the self-updater starts new versions with it.
+def osName = System.getProperty('os.name').toLowerCase()
+def isWindows = osName.contains('win')
+def isMac = osName.contains('mac')
+def portableInput = layout.buildDirectory.dir('portable/input')
+def portableImageDir = layout.buildDirectory.dir('portable/image')
+def runtimeModules = 'java.base,java.desktop,java.logging,java.net.http,java.sql,jdk.jfr,jdk.management,jdk.unsupported,' +
+	'jdk.crypto.ec,jdk.localedata,jdk.charsets'
+
+tasks.register('portableImage', Exec) {
+	group = 'distribution'
+	description = 'Builds a self-contained application folder (launcher + Java runtime) for this operating system.'
+	def fatJarTask = tasks.named('fatJar', Jar)
+	dependsOn fatJarTask
+	inputs.files(fatJarTask)
+	inputs.dir('packaging')
+	outputs.dir(portableImageDir)
+	executable = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }.get()
+		.metadata.installationPath.file("bin/jpackage${isWindows ? '.exe' : ''}").asFile.absolutePath
+	def icon = file("packaging/vantage.${isWindows ? 'ico' : isMac ? 'icns' : 'png'}")
+	args '--type', 'app-image', '--name', 'Vantage', '--vendor', 'Vantage',
+		'--description', 'Vantage Minecraft PvP launcher',
+		'--input', portableInput.get().asFile.absolutePath, '--main-jar', 'vantage-launcher.jar',
+		'--main-class', 'dev.vantage.launcher.Main', '--java-options', '-Xmx512m',
+		'--add-modules', runtimeModules, '--jlink-options', '--strip-debug --no-man-pages --no-header-files',
+		'--icon', icon.absolutePath, '--dest', portableImageDir.get().asFile.absolutePath
+	if (!isMac) {
+		// macOS requires an app version starting with 1 or higher; it falls back to 1.0 there.
+		args '--app-version', project.version
+	}
+	doFirst {
+		delete portableInput, portableImageDir
+		copy {
+			from fatJarTask
+			into portableInput
+			rename { 'vantage-launcher.jar' }
+		}
+	}
+}
+
+tasks.register('portableZip', Zip) {
+	group = 'distribution'
+	description = 'Zips the portable application folder for release.'
+	dependsOn 'portableImage'
+	from portableImageDir
+	archiveFileName = "vantage-launcher-${project.version}-portable-${javafxPlatform}.zip"
+	destinationDirectory = layout.buildDirectory.dir('distributions')
+}

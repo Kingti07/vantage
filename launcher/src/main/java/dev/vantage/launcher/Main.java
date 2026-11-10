@@ -36,6 +36,8 @@ public final class Main {
 
 	private enum Handover {STARTED, FAILED, NOT_POSSIBLE}
 
+	/** Kept strongly reachable: java.util.logging forgets the level of loggers that were garbage collected. */
+	private static final java.util.logging.Logger JAVAFX_LOGGER = java.util.logging.Logger.getLogger("javafx");
 	private static String handoverToken;
 	private static Path handoverFrom;
 	private static String failedUpdate;
@@ -76,6 +78,8 @@ public final class Main {
 				}
 			}
 		}
+		// The launcher runs JavaFX from the class path on purpose (one runnable jar); hide JavaFX's warning about that.
+		JAVAFX_LOGGER.setLevel(java.util.logging.Level.SEVERE);
 		Application.launch(LauncherApp.class, arguments.toArray(String[]::new));
 	}
 

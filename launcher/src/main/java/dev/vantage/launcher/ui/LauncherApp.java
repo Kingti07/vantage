@@ -10,7 +10,6 @@ import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -51,7 +50,7 @@ public final class LauncherApp extends Application {
 		stage.setTitle(VantageInfo.NAME + " Launcher " + VantageInfo.VERSION);
 		stage.setMinWidth(LauncherSettings.WindowState.MIN_WIDTH);
 		stage.setMinHeight(LauncherSettings.WindowState.MIN_HEIGHT);
-		stage.getIcons().add(appIcon());
+		stage.getIcons().addAll(appIcons());
 		if (state.positioned && Screen.getScreensForRectangle(state.x, state.y, state.width, state.height).size() > 0) {
 			stage.setX(state.x);
 			stage.setY(state.y);
@@ -115,22 +114,18 @@ public final class LauncherApp extends Application {
 		stage.maximizedProperty().addListener(changed);
 	}
 
-	/** Generates the window icon from the logo colours so no binary asset is required. */
-	private static Image appIcon() {
-		int size = 64;
-		WritableImage image = new WritableImage(size, size);
-		for (int y = 0; y < size; y++) {
-			for (int x = 0; x < size; x++) {
-				double u = x / (double) size;
-				double v = y / (double) size;
-				// A "V" shape: inside if close to either diagonal arm.
-				double left = Math.abs(u - (0.12 + v * 0.38));
-				double right = Math.abs(u - (0.88 - v * 0.38));
-				boolean arm = (left < 0.09 || right < 0.09) && v > 0.08 && v < 0.92;
-				int argb = arm ? 0xFF7C5CFF : ((x - 32) * (x - 32) + (y - 32) * (y - 32) < 31 * 31 ? 0xFF11141B : 0x00000000);
-				image.getPixelWriter().setArgb(x, y, argb);
+	/** The window and taskbar icon in several sizes; the system picks the best one. */
+	private static List<Image> appIcons() {
+		List<Image> icons = new java.util.ArrayList<>();
+		for (int size : new int[]{16, 32, 64, 128, 256}) {
+			try (java.io.InputStream in = LauncherApp.class.getResourceAsStream("icon-" + size + ".png")) {
+				if (in != null) {
+					icons.add(new Image(in));
+				}
+			} catch (java.io.IOException ignored) {
+				// a missing size is not a problem
 			}
 		}
-		return image;
+		return icons;
 	}
 }

@@ -1,6 +1,8 @@
 name: Release
 
-# Builds, tests and publishes a GitHub release whenever a version tag (v*) is pushed.
+# Builds, tests and publishes a GitHub release whenever a version tag (v*) is pushed:
+# launcher jars for every platform, portable packages with their own Java runtime (built on each OS, because
+# jpackage cannot cross-build), the client mod and SHA256SUMS.txt.
 on:
   push:
     tags:
@@ -10,7 +12,40 @@ permissions:
   contents: write
 
 jobs:
+  portable:
+    name: Portable package (${{ matrix.platform }})
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win
+          - os: macos-latest
+            platform: mac-aarch64
+          - os: ubuntu-latest
+            platform: linux
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build portable package
+        shell: bash
+        run: ./gradlew :launcher:portableZip -PjavafxPlatform=${{ matrix.platform }} --console=plain
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: portable-${{ matrix.platform }}
+          path: launcher/build/distributions/*-portable-*.zip
+          if-no-files-found: error
+
   release:
+    needs: portable
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,13 +66,19 @@ jobs:
             ./gradlew :launcher:fatJar -PjavafxPlatform=$platform --console=plain
           done
 
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: portable-*
+          path: dist
+          merge-multiple: true
+
       - name: Collect release files
         run: |
-          mkdir dist
+          mkdir -p dist
           cp launcher/build/libs/*-all-*.jar dist/
           cp client/build/libs/vantage-client-*.jar dist/
           cd dist
-          sha256sum *.jar > SHA256SUMS.txt
+          sha256sum *.jar *.zip > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Publish release
