@@ -37,7 +37,10 @@ class ErrorTextTest {
 
 	@Test
 	void fileProblemsGetAHint() {
-		assertTrue(ErrorText.describe(new AccessDeniedException("C:\\games\\mods\\a.jar")).text().contains("not allowed to change \"a.jar\""));
+		// Built with the platform separator so the test means the same on Windows, macOS and Linux.
+		String file = java.nio.file.Path.of("games", "mods", "a.jar").toAbsolutePath().toString();
+		assertTrue(ErrorText.describe(new AccessDeniedException(file)).text().contains("not allowed to change \"a.jar\" in "), file);
+		assertTrue(ErrorText.describe(new AccessDeniedException("a.jar")).text().contains("not allowed to change \"a.jar\"."));
 		assertEquals("The disk is full.",
 			ErrorText.describe(new FileSystemException("x: There is not enough space on the disk")).message());
 		assertTrue(ErrorText.describe(new IOException("Hash mismatch for https://x (expected a, got b)")).message().contains("damaged"));

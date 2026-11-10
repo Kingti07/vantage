@@ -14,9 +14,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -24,7 +24,14 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Build, test and check
-        run: ./gradlew build --console=plain
+        run: |
+          set -o pipefail
+          ./gradlew build --console=plain 2>&1 | tee build-output.txt
+
+      # Logs need a GitHub login, annotations do not: this makes the cause of a failure visible on the run page.
+      - name: Report failures as annotations
+        if: failure()
+        run: python3 .github/scripts/report-failures.py build-output.txt
 
       - name: Check dependencies for known vulnerabilities
         run: |

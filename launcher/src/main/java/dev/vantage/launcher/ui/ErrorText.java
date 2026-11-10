@@ -129,8 +129,16 @@ public final class ErrorText {
 		if (file == null) {
 			return "a file";
 		}
-		Path path = Path.of(file);
-		return path.getFileName() != null ? "\"" + path.getFileName() + "\" in " + (path.getParent() != null ? path.getParent() : "") : file;
+		Path path;
+		try {
+			path = Path.of(file);
+		} catch (java.nio.file.InvalidPathException invalid) {
+			return "\"" + file + "\"";
+		}
+		if (path.getFileName() == null) {
+			return "\"" + file + "\"";
+		}
+		return path.getParent() != null ? "\"" + path.getFileName() + "\" in " + path.getParent() : "\"" + path.getFileName() + "\"";
 	}
 
 	private static String firstMessage(Throwable error) {
