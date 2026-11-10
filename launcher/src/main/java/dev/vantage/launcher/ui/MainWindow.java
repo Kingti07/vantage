@@ -98,6 +98,9 @@ public final class MainWindow {
 	/** Called once the stage is visible. */
 	public void onShown() {
 		LauncherSettings settings = context.settings.settings();
+		if (!context.startupWarnings.isEmpty()) {
+			Overlay.message("Some saved data had to be repaired", String.join("\n\n", context.startupWarnings));
+		}
 		if (settings.checkUpdatesOnStart) {
 			SettingsPage.checkForUpdates(this, false);
 		}
@@ -203,6 +206,8 @@ public final class MainWindow {
 			Toasts.info("Minecraft is already " + (game.phase() == GameState.Phase.RUNNING ? "running." : "starting."));
 			return;
 		}
+		// The in-game account switcher may have changed accounts.json since we last read it.
+		context.accounts.reload();
 		if (context.accounts.selected().isEmpty()) {
 			Toasts.error("Add a Microsoft account before playing.");
 			navigate("accounts");

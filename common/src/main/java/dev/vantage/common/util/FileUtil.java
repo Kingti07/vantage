@@ -9,8 +9,30 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public final class FileUtil {
+	private static final DateTimeFormatter BACKUP_STAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+
+	/**
+	 * Moves a damaged file out of the way so it is never overwritten, e.g. {@code instances.json} becomes
+	 * {@code instances.broken-20261110-142301.json}. Returns the new location.
+	 */
+	public static Path moveAside(Path file) throws IOException {
+		String name = file.getFileName().toString();
+		int dot = name.lastIndexOf('.');
+		String base = dot > 0 ? name.substring(0, dot) : name;
+		String extension = dot > 0 ? name.substring(dot) : "";
+		String stamp = LocalDateTime.now().format(BACKUP_STAMP);
+		Path target = file.resolveSibling(base + ".broken-" + stamp + extension);
+		for (int i = 2; Files.exists(target); i++) {
+			target = file.resolveSibling(base + ".broken-" + stamp + "-" + i + extension);
+		}
+		Files.move(file, target);
+		return target;
+	}
+
 	private FileUtil() {
 	}
 
