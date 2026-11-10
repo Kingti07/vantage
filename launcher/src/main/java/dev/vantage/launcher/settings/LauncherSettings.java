@@ -17,12 +17,18 @@ public final class LauncherSettings {
 	public boolean animations = true;
 	public AfterLaunch afterLaunch = AfterLaunch.MINIMIZE;
 	public boolean checkUpdatesOnStart = true;
-	/** GitHub "owner/repo" whose releases provide launcher updates. Empty disables update checks. */
+	/** GitHub "owner/repo" whose releases provide launcher updates. Empty uses the official Vantage repository. */
 	public String updateRepository = "";
 	public String selectedInstance = "";
 	public boolean showSnapshots = false;
 	public int downloadThreads = 8;
 	public boolean consoleOnLaunch = false;
+
+	/** The configured update repository, or the official one when the field is empty. */
+	public String effectiveUpdateRepository() {
+		return updateRepository == null || updateRepository.isBlank()
+			? dev.vantage.common.VantageInfo.DEFAULT_UPDATE_REPOSITORY : updateRepository.trim();
+	}
 
 	/** Settings field first, then {@code -Dvantage.msaClientId}, then the id built into this distribution. */
 	public String effectiveClientId() {

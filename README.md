@@ -46,6 +46,12 @@ client/     Fabric mod that runs inside Minecraft
 
 The launcher and the client never share Minecraft code; they share only `common`.
 
+## Download
+
+Ready-to-run builds are on the [Releases page](https://github.com/Kingti07/vantage/releases): download
+`vantage-launcher-<version>-all-win.jar` and start it with Java 21 (double-click or `java -jar`). The launcher installs
+Minecraft, Fabric and the Vantage client by itself and updates itself from new releases.
+
 ## Building
 
 Requirements: JDK 21 (any vendor). Everything else is downloaded by Gradle.
@@ -122,8 +128,8 @@ Nothing needs to be edited by hand; every setting has a UI and saves automatical
 1. Bump `project_version` in `gradle.properties` and `VantageInfo.VERSION`.
 2. `./gradlew build` once per platform (`-PjavafxPlatform=...`).
 3. Publish a GitHub release tagged `v<version>` with the `vantage-launcher-<version>-all-<platform>.jar` assets.
-4. Launchers with **Settings → Updates → Release channel** set to `owner/repo` download the new jar into
-   `<data>/updates/` and switch to it on the next start. The client mod is inside the launcher jar, so one release
+4. Launchers check the release channel (default `Kingti07/vantage`, configurable under **Settings → Updates**),
+   download the new jar into `<data>/updates/` and switch to it on the next start. The client mod is inside the launcher jar, so one release
    updates both.
 
 ## In-game controls (defaults, all rebindable in **Keybinds**)

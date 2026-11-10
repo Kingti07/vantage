@@ -197,7 +197,7 @@ public final class SettingsPage implements Page {
 
 	private Node updates() {
 		TextField repository = new TextField(settings().updateRepository);
-		repository.setPromptText("owner/repository");
+		repository.setPromptText("Built-in: " + dev.vantage.common.VantageInfo.DEFAULT_UPDATE_REPOSITORY);
 		repository.setPrefWidth(260);
 		repository.textProperty().addListener((o, a, b) -> {
 			settings().updateRepository = b.trim();
@@ -211,7 +211,7 @@ public final class SettingsPage implements Page {
 		Button check = Ui.button("Check now", Icons.REFRESH, "ghost");
 		check.setOnAction(e -> checkForUpdates(window, true));
 		return section("Updates",
-			setting("Release channel", "GitHub repository whose releases publish Vantage builds. Leave empty to disable updates.", repository),
+			setting("Release channel", "GitHub repository whose releases publish Vantage builds. Leave empty for the official repository.", repository),
 			setting("Check on start", "Look for a new version every time the launcher opens.", auto),
 			Ui.row(10, Ui.label("Current version " + VantageInfo.VERSION, "muted"), Ui.spacer(), check));
 	}
@@ -220,7 +220,7 @@ public final class SettingsPage implements Page {
 	public static void checkForUpdates(MainWindow window, boolean userInitiated) {
 		LauncherSettings settings = window.context().settings.settings();
 		String platform = platformClassifier();
-		Ui.async(() -> window.context().updater.check(settings.updateRepository, platform), release -> {
+		Ui.async(() -> window.context().updater.check(settings.effectiveUpdateRepository(), platform), release -> {
 			if (release.isEmpty()) {
 				if (userInitiated) {
 					Toasts.success("You are on the latest version (" + VantageInfo.VERSION + ").");

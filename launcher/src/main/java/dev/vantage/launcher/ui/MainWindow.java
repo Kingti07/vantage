@@ -98,7 +98,7 @@ public final class MainWindow {
 	/** Called once the stage is visible. */
 	public void onShown() {
 		LauncherSettings settings = context.settings.settings();
-		if (settings.checkUpdatesOnStart && !settings.updateRepository.isBlank()) {
+		if (settings.checkUpdatesOnStart) {
 			SettingsPage.checkForUpdates(this, false);
 		}
 	}

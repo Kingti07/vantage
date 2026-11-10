@@ -21,6 +21,8 @@ public final class VantageInfo {
 	public static final String PROP_LAUNCHER_DIR = "vantage.launcherDir";
 	/** System property carrying the Azure application (client) id used for Microsoft sign-in. */
 	public static final String PROP_MSA_CLIENT_ID = "vantage.msaClientId";
+	/** GitHub repository whose releases deliver launcher (and bundled client) updates. */
+	public static final String DEFAULT_UPDATE_REPOSITORY = "Kingti07/vantage";
 	/**
 	 * Application (client) id of the "Vantage Launcher" Azure app registration (personal Microsoft accounts,
 	 * public client flows enabled). Public-client ids are not secrets. Microsoft must approve the id for the
