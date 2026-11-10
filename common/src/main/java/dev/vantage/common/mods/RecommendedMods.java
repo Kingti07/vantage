@@ -8,17 +8,18 @@ import java.util.List;
  * instance's Minecraft version and loader.
  */
 public final class RecommendedMods {
-	public record Recommendation(String slug, String title, String purpose, boolean defaultSelected) {
+	/** @param modId the Fabric mod id (from fabric.mod.json), used to find the installed mod */
+	public record Recommendation(String slug, String modId, String title, String purpose, boolean defaultSelected) {
 	}
 
 	public static final List<Recommendation> PERFORMANCE = List.of(
-		new Recommendation("sodium", "Sodium", "Modern rendering engine – large FPS gains", true),
-		new Recommendation("lithium", "Lithium", "Game logic / tick optimizations", true),
-		new Recommendation("immediatelyfast", "ImmediatelyFast", "Faster immediate-mode rendering (HUD, text, entities)", true),
-		new Recommendation("ferrite-core", "FerriteCore", "Reduces memory usage", true),
-		new Recommendation("entityculling", "EntityCulling", "Skips rendering of hidden entities and block entities", true),
-		new Recommendation("moreculling", "More Culling", "Extra culling for leaves, item frames and more", false),
-		new Recommendation("c2me-fabric", "C2ME", "Faster, parallel chunk loading and generation", false)
+		new Recommendation("sodium", "sodium", "Sodium", "Modern rendering engine – large FPS gains", true),
+		new Recommendation("lithium", "lithium", "Lithium", "Game logic / tick optimizations", true),
+		new Recommendation("immediatelyfast", "immediatelyfast", "ImmediatelyFast", "Faster immediate-mode rendering (HUD, text, entities)", true),
+		new Recommendation("ferrite-core", "ferritecore", "FerriteCore", "Reduces memory usage", true),
+		new Recommendation("entityculling", "entityculling", "EntityCulling", "Skips rendering of hidden entities and block entities", true),
+		new Recommendation("moreculling", "moreculling", "More Culling", "Extra culling for leaves, item frames and more", false),
+		new Recommendation("c2me-fabric", "c2me", "C2ME", "Faster, parallel chunk loading and generation", false)
 	);
 
 	private RecommendedMods() {

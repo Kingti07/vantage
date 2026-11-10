@@ -28,7 +28,7 @@ import java.util.UUID;
  */
 public final class SettingsStore {
 	/** Current schema version of {@code launcher.json} / {@code instances.json}. */
-	public static final int CONFIG_VERSION = 1;
+	public static final int CONFIG_VERSION = 2;
 	private static final Logger LOGGER = LoggerFactory.getLogger(SettingsStore.class);
 	private static final Type INSTANCE_LIST = new TypeToken<List<Instance>>() {
 	}.getType();
@@ -97,6 +97,16 @@ public final class SettingsStore {
 		if (settings.configVersion < 1) {
 			// v0 -> v1: versioning was introduced; the layout of both files is unchanged.
 			settings.configVersion = 1;
+			changed = true;
+		}
+		if (settings.configVersion < 2) {
+			// v1 -> v2 (Vantage 0.2.0): performance mods are on for new installations. Existing ones keep their mods
+			// as they are and are asked once instead of being changed behind the player's back.
+			for (Instance instance : instances) {
+				instance.performanceMods = false;
+				instance.offerPerformanceMods = true;
+			}
+			settings.configVersion = 2;
 			changed = true;
 		}
 		if (settings.configVersion > CONFIG_VERSION) {

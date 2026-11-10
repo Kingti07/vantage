@@ -10,6 +10,14 @@ import java.util.regex.Pattern;
  * memory and Java settings.
  */
 public final class Instance {
+	/** Graphics engine of the installation. */
+	public enum Renderer {
+		/** Minecraft's own OpenGL renderer (with Sodium when the performance mods are on). */
+		OPENGL,
+		/** VulkanMod (experimental): replaces OpenGL with Vulkan; excludes Sodium and Iris. */
+		VULKAN
+	}
+
 	public static final int DEFAULT_MEMORY_MB = 4096;
 	public static final int MIN_MEMORY_MB = 1024;
 	public static final int MAX_MEMORY_MB = 131_072;
@@ -36,6 +44,15 @@ public final class Instance {
 	public boolean fullscreen = false;
 	/** Install the bundled Vantage client mod (only possible on the Minecraft version it was built for). */
 	public boolean vantageClient = true;
+	/** Install and keep the recommended performance mods (Sodium, Lithium, ImmediatelyFast, FerriteCore, EntityCulling). */
+	public boolean performanceMods = true;
+	/** Set once the performance mods were installed; removing one by hand afterwards is then respected. */
+	public boolean performanceModsInstalled = false;
+	/** An installation from before 0.2.0 that has not been asked yet whether it wants the performance mods. */
+	public boolean offerPerformanceMods = false;
+	public Renderer renderer = Renderer.OPENGL;
+	/** Mods (file names) the Vulkan renderer disabled; they are enabled again when switching back to OpenGL. */
+	public java.util.List<String> disabledForVulkan = new java.util.ArrayList<>();
 	public long lastPlayed = 0;
 	public long created = System.currentTimeMillis();
 
@@ -97,6 +114,14 @@ public final class Instance {
 			created = System.currentTimeMillis();
 			changed = true;
 		}
+		if (renderer == null) {
+			renderer = Renderer.OPENGL;
+			changed = true;
+		}
+		if (disabledForVulkan == null) {
+			disabledForVulkan = new java.util.ArrayList<>();
+			changed = true;
+		}
 		if (lastPlayed < 0) {
 			lastPlayed = 0;
 			changed = true;
@@ -119,6 +144,11 @@ public final class Instance {
 		copy.customResolution = customResolution;
 		copy.fullscreen = fullscreen;
 		copy.vantageClient = vantageClient;
+		copy.performanceMods = performanceMods;
+		copy.performanceModsInstalled = performanceModsInstalled;
+		copy.offerPerformanceMods = offerPerformanceMods;
+		copy.renderer = renderer;
+		copy.disabledForVulkan = new java.util.ArrayList<>(disabledForVulkan);
 		copy.lastPlayed = lastPlayed;
 		copy.created = created;
 		return copy;

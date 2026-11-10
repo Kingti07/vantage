@@ -76,6 +76,32 @@ public final class MainWindow {
 		navigate(pages.containsKey(lastPage) ? lastPage : "home");
 	}
 
+	/**
+	 * Installations from before 0.2.0 kept their mods as they were. Ask once whether they should get the performance
+	 * mods too; the answer applies to all of them and the question never comes back.
+	 */
+	private void offerPerformanceMods() {
+		java.util.List<Instance> candidates = context.settings.instances().stream().filter(i -> i.offerPerformanceMods).toList();
+		if (candidates.isEmpty()) {
+			return;
+		}
+		for (Instance instance : candidates) {
+			instance.offerPerformanceMods = false;
+		}
+		context.settings.saveInstances();
+		Overlay.confirm("More FPS with performance mods?",
+			"Vantage can install Sodium, Lithium, ImmediatelyFast, FerriteCore and EntityCulling from Modrinth on the next start. "
+				+ "In Vantage's benchmark they raised the frame rate by up to about 90%. You can turn them off for each installation "
+				+ "under Installations > Edit > Performance mods.",
+			"Install on next start", false, () -> {
+				for (Instance instance : candidates) {
+					instance.performanceMods = true;
+				}
+				context.settings.saveInstances();
+				Toasts.success("The performance mods are installed the next time you press Play.");
+			});
+	}
+
 	/** Starts the selected installation (Ctrl+Enter). */
 	public void playSelected() {
 		play(context.settings.selectedInstance(), GameLauncher.QuickPlay.NONE);
@@ -107,6 +133,7 @@ public final class MainWindow {
 		if (!context.startupWarnings.isEmpty()) {
 			Overlay.message("Some saved data had to be repaired", String.join("\n\n", context.startupWarnings));
 		}
+		offerPerformanceMods();
 		dev.vantage.launcher.Main.failedUpdate().ifPresent(version -> Overlay.message("Update could not be started",
 			"Vantage " + version + " did not start correctly, so you are still using version " + VantageInfo.VERSION
 				+ ". This update will not be offered again. Please report the problem on GitHub."));

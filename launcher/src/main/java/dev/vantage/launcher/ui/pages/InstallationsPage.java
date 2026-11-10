@@ -268,7 +268,17 @@ public final class InstallationsPage implements Page {
 		grid.addRow(row++, Ui.label("Resolution", "muted"), Ui.row(10, customResolution, width, Ui.label("×", "muted"), height,
 			Ui.label("Fullscreen", "small", "muted"), fullscreen));
 		grid.addRow(row++, Ui.label("Game directory", "muted"), Ui.row(8, gameDir, browseDir));
-		grid.addRow(row, Ui.label("Vantage client", "muted"), Ui.row(10, vantage, vantageNote));
+		grid.addRow(row++, Ui.label("Vantage client", "muted"), Ui.row(10, vantage, vantageNote));
+		ToggleSwitch performance = new ToggleSwitch(instance.performanceMods);
+		Label performanceNote = Ui.label("Installs Sodium, Lithium, ImmediatelyFast, FerriteCore and EntityCulling from Modrinth on the "
+			+ "next start. Up to about 90% more FPS in Vantage's benchmark; results vary by PC.", "small", "muted");
+		performanceNote.setWrapText(true);
+		ToggleSwitch vulkan = new ToggleSwitch(instance.renderer == Instance.Renderer.VULKAN);
+		Label vulkanNote = Ui.label("Experimental: VulkanMod replaces OpenGL with Vulkan. Sodium and Iris are switched off while it is "
+			+ "on, Motion Blur is unavailable and some mods may not work.", "small", "muted");
+		vulkanNote.setWrapText(true);
+		grid.addRow(row++, Ui.label("Performance mods", "muted"), Ui.row(10, performance, performanceNote));
+		grid.addRow(row, Ui.label("Vulkan renderer", "muted"), Ui.row(10, vulkan, vulkanNote));
 		GridPane.setHgrow(name, Priority.ALWAYS);
 
 		Button cancel = Ui.button("Cancel", null, "ghost");
@@ -330,6 +340,9 @@ public final class InstallationsPage implements Page {
 			target.fullscreen = fullscreen.isSelected();
 			target.gameDirectory = gameDir.getText().trim();
 			target.vantageClient = vantage.isSelected() && target.supportsVantageClient();
+			target.performanceMods = performance.isSelected();
+			target.renderer = vulkan.isSelected() ? Instance.Renderer.VULKAN : Instance.Renderer.OPENGL;
+			target.offerPerformanceMods = false;
 			window.context().settings.updateInstance(target);
 			close.run();
 			Toasts.success(creating ? "Installation created." : "Installation saved.");

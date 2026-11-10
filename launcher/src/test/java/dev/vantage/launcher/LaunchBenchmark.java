@@ -47,6 +47,8 @@ public final class LaunchBenchmark {
 		Files.deleteIfExists(result);
 		instance.gameDirectory = gameDir.toString();
 		instance.memoryMb = 4096;
+		// Controlled runs: only the mods named on the command line, never the automatic performance mods.
+		instance.performanceMods = false;
 		instance.customResolution = true;
 		instance.width = 1280;
 		instance.height = 720;

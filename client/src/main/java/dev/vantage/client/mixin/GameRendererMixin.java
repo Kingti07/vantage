@@ -67,7 +67,7 @@ public abstract class GameRendererMixin {
 			return;
 		}
 		WorldVisuals.MotionBlur blur = VantageClient.get().modules().get(WorldVisuals.MotionBlur.class);
-		if (blur == null || !blur.isEnabled()) {
+		if (blur == null || !blur.isEnabled() || WorldVisuals.MotionBlur.UNSUPPORTED_RENDERER) {
 			return;
 		}
 		PostChain chain = minecraft.getShaderManager().getPostChain(blur.effect(), LevelTargetBundle.MAIN_TARGETS);

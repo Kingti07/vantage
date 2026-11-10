@@ -111,10 +111,14 @@ public final class WorldVisuals {
 
 	/** Blends each frame with the previous ones using a post-processing shader. */
 	public static final class MotionBlur extends Module {
+		/** VulkanMod replaces the OpenGL post-processing this effect is built on; it stays off there. */
+		public static final boolean UNSUPPORTED_RENDERER = net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("vulkanmod");
+
 		public final NumberSetting strength = add(new NumberSetting("strength", "Strength", "How long previous frames linger.", 5, 1, 9, 1));
 
 		public MotionBlur() {
-			super("motionblur", "Motion Blur", "Smooth motion blur on camera movement.", Category.VISUAL, false);
+			super("motionblur", "Motion Blur", UNSUPPORTED_RENDERER ? "Not available with the Vulkan renderer (VulkanMod)."
+				: "Smooth motion blur on camera movement.", Category.VISUAL, false);
 		}
 
 		public Identifier effect() {

@@ -95,7 +95,9 @@ public final class LaunchService {
 
 		Path gameDir = instance.resolveGameDirectory(paths.instances());
 		progress.checkCancelled();
-		prepareMods(instance, gameDir, progress);
+		for (String note : prepareMods(instance, gameDir, progress)) {
+			output.accept("[Vantage] " + note);
+		}
 
 		// Last point at which cancelling is possible; after this the game process exists.
 		progress.checkCancelled();
@@ -113,8 +115,11 @@ public final class LaunchService {
 		return new Session(process, instance, gameDir, offline);
 	}
 
-	/** Applies queued mod changes and keeps the bundled client mod and Fabric API in place. */
-	public void prepareMods(Instance instance, Path gameDir, ProgressListener progress) throws IOException {
+	/**
+	 * Applies queued mod changes, keeps the bundled client mod and Fabric API in place and brings the performance
+	 * mods and the renderer in line with the installation's settings. Returns notes for the console.
+	 */
+	public List<String> prepareMods(Instance instance, Path gameDir, ProgressListener progress) throws IOException {
 		Path modsDir = gameDir.resolve("mods");
 		Files.createDirectories(modsDir);
 		ModManager mods = new ModManager(modsDir, modrinth, instance.minecraftVersion, VantageInfo.LOADER);
@@ -122,7 +127,13 @@ public final class LaunchService {
 		if (failed > 0) {
 			LOGGER.warn("{} queued mod change(s) could not be applied", failed);
 		}
+		installClient(instance, mods, progress);
+		progress.checkCancelled();
+		return PerformanceMods.apply(instance, mods, progress);
+	}
 
+	private void installClient(Instance instance, ModManager mods, ProgressListener progress) throws IOException {
+		Path modsDir = mods.modsDir();
 		Path clientJar = modsDir.resolve(CLIENT_JAR_NAME);
 		boolean wantClient = instance.vantageClient && instance.supportsVantageClient();
 		if (!wantClient) {

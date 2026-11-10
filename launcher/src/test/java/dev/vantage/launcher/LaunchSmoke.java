@@ -38,6 +38,8 @@ public final class LaunchSmoke {
 		Instance instance = context.settings.selectedInstance();
 		instance.extraJvmArgs = "-Dvantage.smokeTest=true -Dvantage.mixinAudit=true";
 		instance.memoryMb = 3072;
+		// Controlled runs: only the mods named on the command line, never the automatic performance mods.
+		instance.performanceMods = false;
 		context.settings.updateInstance(instance);
 		// A brand-new game directory opens Minecraft's accessibility onboarding first; skip it for the unattended run.
 		Path gameDir = instance.resolveGameDirectory(paths.instances());
