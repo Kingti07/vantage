@@ -19,6 +19,28 @@ public abstract class TextHudModule extends HudModule {
 	/** The value text; {@code preview} is true in the HUD editor when no live data exists. */
 	protected abstract String value(boolean preview);
 
+	/** Text is rebuilt at most this often (20 times a second): readable, and far less work than once per frame. */
+	private static final long REFRESH_NANOS = 50_000_000L;
+	private String cachedLabel;
+	private String cachedValue;
+	private int cachedLabelWidth;
+	private int cachedValueWidth;
+	private boolean cachedPreview;
+	private long cachedAt;
+
+	/** Rebuilds the cached text when it is older than {@link #REFRESH_NANOS} or the preview mode changed. */
+	private void refresh(boolean preview) {
+		long now = System.nanoTime();
+		if (cachedValue == null || preview != cachedPreview || now - cachedAt >= REFRESH_NANOS) {
+			cachedLabel = labelPart();
+			cachedValue = valuePart(preview);
+			cachedLabelWidth = textWidth(cachedLabel);
+			cachedValueWidth = textWidth(cachedValue);
+			cachedPreview = preview;
+			cachedAt = now;
+		}
+	}
+
 	private String labelPart() {
 		return (brackets.enabled() ? "[" : "") + (showLabel.enabled() ? label() + ": " : "");
 	}
@@ -29,7 +51,8 @@ public abstract class TextHudModule extends HudModule {
 
 	@Override
 	public int contentWidth(boolean preview) {
-		return textWidth(labelPart()) + textWidth(valuePart(preview));
+		refresh(preview);
+		return cachedLabelWidth + cachedValueWidth;
 	}
 
 	@Override
@@ -39,8 +62,8 @@ public abstract class TextHudModule extends HudModule {
 
 	@Override
 	protected void renderContent(GuiGraphics g, int x, int y, boolean preview) {
-		String label = labelPart();
-		drawText(g, label, x, y, accent());
-		drawText(g, valuePart(preview), x + textWidth(label), y, text());
+		refresh(preview);
+		drawText(g, cachedLabel, x, y, accent());
+		drawText(g, cachedValue, x + cachedLabelWidth, y, text());
 	}
 }

@@ -99,7 +99,7 @@ tasks.register('launchBenchmark', JavaExec) {
 	mainClass = 'dev.vantage.launcher.LaunchBenchmark'
 	args(project.findProperty('benchDir') ?: layout.buildDirectory.dir('benchmark').get().asFile.absolutePath,
 		project.findProperty('benchProfile') ?: 'vanilla', project.findProperty('benchSeconds') ?: '30',
-		project.findProperty('benchRd') ?: '12', project.findProperty('benchMods') ?: '')
+		project.findProperty('benchRd') ?: '12', project.findProperty('benchMods') ?: '', project.findProperty('benchPreset') ?: 'false')
 }
 
 // Portable version: the launcher together with its own Java runtime, so players need no installed Java.

@@ -127,20 +127,36 @@ public final class PerformanceModules {
 	/** One-click competitive graphics preset using vanilla options only. */
 	public static final class FpsBoost extends Module {
 		public FpsBoost() {
-			super("fpsboost", "FPS Boost Preset", "Use \"Apply\" in the settings to switch vanilla video options to a high-FPS preset.", Category.PERFORMANCE, false);
+			super("fpsboost", "FPS Boost Preset", "Use \"Apply\" in the settings to switch the video options to a high-FPS preset: fast "
+				+ "graphics, no clouds, shadows, smooth lighting or fade-in, no frame cap or V-Sync.", Category.PERFORMANCE, false);
 		}
 
 		/** Applies the preset to vanilla options and saves them. */
 		public static void applyPreset() {
 			Options options = MC.options;
+			// The "Fast" bundle also lowers the view distances; those stay the player's choice (only capped below).
+			int renderDistance = options.renderDistance().get();
+			int simulationDistance = options.simulationDistance().get();
+			// "Fast" first: it sets a bundle of options; the lines below then fine-tune on top of it.
+			options.graphicsPreset().set(net.minecraft.client.GraphicsPreset.FAST);
+			options.cutoutLeaves().set(false);
+			options.improvedTransparency().set(false);
+			options.ambientOcclusion().set(false);
+			options.chunkSectionFadeInTime().set(0.0);
+			options.textureFiltering().set(net.minecraft.client.TextureFilteringMethod.NONE);
+			options.vignette().set(false);
+			options.menuBackgroundBlurriness().set(0);
+			// No frame cap and no V-Sync: the monitor's refresh rate is no longer a ceiling.
+			options.enableVsync().set(false);
+			options.framerateLimit().set(260);
 			options.cloudStatus().set(CloudStatus.OFF);
 			options.particles().set(ParticleStatus.DECREASED);
 			options.entityShadows().set(false);
 			options.biomeBlendRadius().set(0);
 			options.mipmapLevels().set(0);
 			options.entityDistanceScaling().set(0.75);
-			options.simulationDistance().set(Math.min(options.simulationDistance().get(), 8));
-			options.renderDistance().set(Math.min(options.renderDistance().get(), 12));
+			options.simulationDistance().set(Math.min(simulationDistance, 8));
+			options.renderDistance().set(Math.min(renderDistance, 12));
 			options.save();
 		}
 	}

@@ -88,6 +88,10 @@ public final class DevBenchmark {
 					if (dynamicFps != null) {
 						dynamicFps.setEnabled(false);
 					}
+					if (Boolean.getBoolean("vantage.benchmark.preset")) {
+						PerformanceModules.FpsBoost.applyPreset();
+						LOGGER.info("[Benchmark] FPS Boost preset applied");
+					}
 					createWorld(mc);
 					phase = Phase.LOADING_WORLD;
 					ticks = 0;
@@ -150,6 +154,7 @@ public final class DevBenchmark {
 		result.put("onePercentLowFps", round(fps(percentile(times, 0.99))));
 		result.put("pointOnePercentLowFps", round(fps(percentile(times, 0.999))));
 		result.put("renderDistance", mc.options.renderDistance().get());
+		result.put("fpsBoostPreset", Boolean.getBoolean("vantage.benchmark.preset"));
 		result.put("window", mc.getWindow().getWidth() + "x" + mc.getWindow().getHeight());
 		Map<String, String> mods = new LinkedHashMap<>();
 		for (String id : RELEVANT_MODS) {

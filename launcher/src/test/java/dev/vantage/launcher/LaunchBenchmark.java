@@ -37,6 +37,7 @@ public final class LaunchBenchmark {
 		int seconds = args.length > 2 ? Integer.parseInt(args[2]) : 30;
 		int renderDistance = args.length > 3 && !args[3].isBlank() ? Integer.parseInt(args[3]) : 12;
 		String modList = args.length > 4 ? args[4] : "";
+		boolean preset = args.length > 5 && Boolean.parseBoolean(args[5]);
 		LauncherPaths paths = new LauncherPaths(dir);
 		paths.createDirectories();
 		LauncherContext context = new LauncherContext(paths);
@@ -55,6 +56,7 @@ public final class LaunchBenchmark {
 		// Far render distances need longer to generate and build the world before measuring makes sense.
 		int warmup = renderDistance >= 20 ? 90 : 20;
 		instance.extraJvmArgs = "-Dvantage.benchmark=" + seconds + " -Dvantage.benchmark.warmup=" + warmup
+			+ (preset ? " -Dvantage.benchmark.preset=true" : "")
 			+ " \"-Dvantage.benchmark.out=" + result + "\"";
 		context.settings.updateInstance(instance);
 
