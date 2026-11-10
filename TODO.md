@@ -14,8 +14,8 @@ manual checks.
 - [ ] Self-update against a real newer GitHub release (the hand-over itself was tested locally with a good and a
       corrupt jar). Note: 0.1.0 still uses the old update check and only finds releases that are not marked as
       pre-release.
-- [ ] First run of the new release workflow with the portable matrix (Windows, macOS, Linux runners) and of the CI
-      workflow.
+- [ ] First run of the new release workflow with the portable matrix (Windows, macOS, Linux runners). The CI
+      workflow runs green on Linux since 2026-11-10.
 - [ ] Coexistence with Sodium, Iris, Lithium, ImmediatelyFast: Vantage mixins target vanilla methods that some of
       these mods also modify (light texture, fog, item rendering). Needs an in-game test with the performance pack.
 
