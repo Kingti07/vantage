@@ -13,8 +13,6 @@ import dev.vantage.launcher.game.MojangModels.AssetIndex;
 import dev.vantage.launcher.game.MojangModels.AssetObject;
 import dev.vantage.launcher.game.MojangModels.Library;
 import dev.vantage.launcher.game.MojangModels.VersionJson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +32,6 @@ import java.util.zip.ZipFile;
  * logging configuration and the Java runtime. Re-running is cheap: files that are already present are skipped.
  */
 public final class GameInstaller {
-	private static final Logger LOGGER = LoggerFactory.getLogger(GameInstaller.class);
 
 	/** Everything {@link GameLauncher} needs to build the command line. */
 	public record PreparedGame(
@@ -121,6 +118,10 @@ public final class GameInstaller {
 		indexQueue.add(indexRef.url(), indexFile, indexRef.sha1(), indexRef.size());
 		indexQueue.run(listener, "Downloading asset index", 0.25, 0.27, 1);
 		AssetIndex index = Json.read(indexFile, AssetIndex.class);
+		if (index.virtual() || index.mapToResources()) {
+			// Minecraft before 1.7.10 expects a different asset layout (virtual / resources folder).
+			throw new IOException("Minecraft " + gameVersion + " is too old for this launcher. Vantage supports Minecraft 1.7.10 and newer.");
+		}
 		DownloadQueue assets = new DownloadQueue(verify);
 		Map<String, AssetObject> unique = new LinkedHashMap<>();
 		for (AssetObject object : index.objects().values()) {
@@ -132,9 +133,6 @@ public final class GameInstaller {
 				paths.assets().resolve("objects").resolve(prefix).resolve(object.hash()), object.hash(), object.size());
 		}
 		assets.run(listener, "Downloading game assets", 0.27, 0.75, Math.max(threads, 8));
-		if (index.virtual() || index.mapToResources()) {
-			LOGGER.warn("Asset index {} uses legacy virtual assets, which this launcher does not lay out", indexRef.id());
-		}
 
 		listener.checkCancelled();
 		// Logging configuration

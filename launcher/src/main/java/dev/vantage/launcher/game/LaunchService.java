@@ -41,8 +41,8 @@ public final class LaunchService {
 	/** Left by the in-game account switcher (client AccountsScreen.RELAUNCH_FILE) to ask for a restart with another account. */
 	public static final String RELAUNCH_REQUEST_FILE = "relaunch-request.json";
 
-	/** A running game. */
-	public record Session(Process process, Instance instance, Path gameDir) {
+	/** A running game; {@code offline} means the session could not be refreshed and online play will not work. */
+	public record Session(Process process, Instance instance, Path gameDir, boolean offline) {
 	}
 
 	private final LauncherPaths paths;
@@ -65,13 +65,25 @@ public final class LaunchService {
 		ProgressListener progress, Consumer<String> output) throws IOException, AuthException {
 		MinecraftAccount account = accounts.selected().orElseThrow(() -> new AuthException("Add a Microsoft account before playing."));
 		String clientId = settings.effectiveClientId();
+		boolean offline = false;
 		if (account.needsRefresh()) {
 			if (clientId.isBlank()) {
 				throw new AuthException("Your session expired and no Azure client id is configured. Set it in Settings → Microsoft sign-in.");
 			}
 			progress.status("Refreshing Microsoft session");
-			account = new MicrosoftAuth(clientId).refresh(account);
-			accounts.update(account);
+			try {
+				account = new MicrosoftAuth(clientId).refresh(account);
+				accounts.update(account);
+			} catch (AuthException e) {
+				if (!dev.vantage.common.util.Http.isNetworkUnavailable(e) || account.minecraftAccessToken() == null) {
+					throw e;
+				}
+				// Offline: singleplayer works with the old session; online servers will reject it until we are back online.
+				LOGGER.warn("Could not refresh the session (offline); starting with the saved one");
+				offline = true;
+				output.accept("[Vantage] You are offline. Starting with your saved session: singleplayer works, "
+					+ "online servers will not accept it until you are back online.");
+			}
 		}
 
 		String loader = instance.loaderVersion == null || instance.loaderVersion.isBlank()
@@ -94,7 +106,7 @@ public final class LaunchService {
 		Thread pump = new Thread(() -> pump(process.getInputStream(), output), "vantage-game-output");
 		pump.setDaemon(true);
 		pump.start();
-		return new Session(process, instance, gameDir);
+		return new Session(process, instance, gameDir, offline);
 	}
 
 	/** Applies queued mod changes and keeps the bundled client mod and Fabric API in place. */

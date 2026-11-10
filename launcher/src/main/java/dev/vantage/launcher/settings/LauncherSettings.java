@@ -39,6 +39,25 @@ public final class LauncherSettings {
 	public boolean showSnapshots = false;
 	public int downloadThreads = DEFAULT_DOWNLOAD_THREADS;
 	public boolean consoleOnLaunch = false;
+	/** Size and position of the launcher window, restored on the next start. */
+	public WindowState window = new WindowState();
+	/** Page that was open when the launcher was closed. */
+	public String lastPage = "home";
+
+	public static final class WindowState {
+		public static final double DEFAULT_WIDTH = 1180;
+		public static final double DEFAULT_HEIGHT = 740;
+		public static final double MIN_WIDTH = 980;
+		public static final double MIN_HEIGHT = 640;
+
+		/** False until the window was moved once; then {@link #x} and {@link #y} are meaningful. */
+		public boolean positioned = false;
+		public double x = 0;
+		public double y = 0;
+		public double width = DEFAULT_WIDTH;
+		public double height = DEFAULT_HEIGHT;
+		public boolean maximized = false;
+	}
 
 	/** The configured update repository, or the official one when the field is empty. */
 	public String effectiveUpdateRepository() {
@@ -86,6 +105,26 @@ public final class LauncherSettings {
 		}
 		if (downloadThreads < MIN_DOWNLOAD_THREADS || downloadThreads > MAX_DOWNLOAD_THREADS) {
 			downloadThreads = DEFAULT_DOWNLOAD_THREADS;
+			changed = true;
+		}
+		if (window == null) {
+			window = new WindowState();
+			changed = true;
+		}
+		if (!(window.width >= WindowState.MIN_WIDTH && window.width <= 20_000)
+			|| !(window.height >= WindowState.MIN_HEIGHT && window.height <= 20_000)) {
+			window.width = WindowState.DEFAULT_WIDTH;
+			window.height = WindowState.DEFAULT_HEIGHT;
+			changed = true;
+		}
+		if (!Double.isFinite(window.x) || !Double.isFinite(window.y)) {
+			window.positioned = false;
+			window.x = 0;
+			window.y = 0;
+			changed = true;
+		}
+		if (lastPage == null || lastPage.isBlank()) {
+			lastPage = "home";
 			changed = true;
 		}
 		return changed;

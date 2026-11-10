@@ -259,3 +259,5 @@
 .console-list .list-cell.log-launcher { -fx-text-fill: -v-accent; }
 .report-area { -fx-font-family: "Consolas", "Menlo", "Monospaced"; -fx-font-size: 12px; }
 .report-area .content { -fx-background-color: #07080b; }
+/* Visible keyboard focus (Tab navigation) without changing the layout. */
+.button:focused, .nav-button:focused, .toggle-track:focused { -fx-effect: dropshadow(gaussian, rgba(124, 92, 255, 0.85), 6, 0.55, 0, 0); }

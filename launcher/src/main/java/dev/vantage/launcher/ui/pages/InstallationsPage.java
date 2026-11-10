@@ -41,6 +41,8 @@ import java.util.List;
 /** Lists installations and edits their version, loader, memory, Java and directory settings. */
 public final class InstallationsPage implements Page {
 	private static final String LATEST_LOADER = "Latest stable";
+	/** releaseTime of Minecraft 1.7.10 in Mojang's manifest; older versions are not offered. */
+	static final String OLDEST_SUPPORTED_RELEASE = "2014-05-14T17:29:23+00:00";
 
 	private final MainWindow window;
 	private final VBox root = new VBox();
@@ -230,7 +232,10 @@ public final class InstallationsPage implements Page {
 		Runnable loadVersions = () -> Ui.async(() -> window.context().meta.manifest(), manifest -> {
 			List<String> ids = new ArrayList<>();
 			for (MojangModels.ManifestEntry entry : manifest.versions()) {
-				if ("release".equals(entry.type()) || (snapshots.isSelected() && "snapshot".equals(entry.type()))) {
+				boolean wanted = "release".equals(entry.type()) || (snapshots.isSelected() && "snapshot".equals(entry.type()));
+				// Versions before 1.7.10 use an asset layout this launcher does not install (decision in AUDIT.md, F8).
+				boolean supported = entry.releaseTime() == null || entry.releaseTime().compareTo(OLDEST_SUPPORTED_RELEASE) >= 0;
+				if (wanted && supported) {
 					ids.add(entry.id());
 				}
 			}
@@ -300,6 +305,19 @@ public final class InstallationsPage implements Page {
 				Toasts.error("Name and Minecraft version are required.");
 				return;
 			}
+			String folderProblem = checkGameDirectory(gameDir.getText().trim());
+			if (folderProblem != null) {
+				Toasts.error(folderProblem);
+				return;
+			}
+			String sharedWith = sharedGameDirectory(instance, gameDir.getText().trim());
+			if (sharedWith != null) {
+				Toasts.info("Note: \"" + sharedWith + "\" uses the same game folder, so both share worlds, mods and settings.");
+			}
+			long memoryMb = Math.round(memory.getValue() / 256) * 256;
+			if (memoryMb > totalMemoryMb() * 3 / 4) {
+				Toasts.info("More than 75% of your computer's memory is assigned to Minecraft. If the system gets slow, lower it.");
+			}
 			Instance target = creating ? window.context().settings.createInstance(name.getText().trim(), version.getValue()) : instance;
 			target.name = name.getText().trim();
 			target.minecraftVersion = version.getValue();
@@ -318,6 +336,47 @@ public final class InstallationsPage implements Page {
 			Toasts.success(creating ? "Installation created." : "Installation saved.");
 			onShow();
 		});
+	}
+
+	/** Null if {@code text} is empty (default folder) or a usable folder; otherwise what is wrong with it. */
+	static String checkGameDirectory(String text) {
+		if (text.isEmpty()) {
+			return null;
+		}
+		Path dir;
+		try {
+			dir = Path.of(text);
+		} catch (java.nio.file.InvalidPathException e) {
+			return "The game folder path is not valid: " + e.getReason() + ".";
+		}
+		if (!dir.isAbsolute()) {
+			return "Choose a complete game folder path (for example with Browse).";
+		}
+		if (java.nio.file.Files.exists(dir) && !java.nio.file.Files.isDirectory(dir)) {
+			return "The game folder path points to a file, not a folder.";
+		}
+		Path existing = dir;
+		while (existing != null && !java.nio.file.Files.exists(existing)) {
+			existing = existing.getParent();
+		}
+		if (existing == null || !java.nio.file.Files.isWritable(existing)) {
+			return "Vantage cannot write to " + (existing == null ? dir : existing) + ". Choose another game folder.";
+		}
+		return null;
+	}
+
+	/** Name of another installation that would use the same game folder, or null. */
+	private String sharedGameDirectory(Instance editing, String text) {
+		Path instancesRoot = window.context().paths.instances();
+		Instance probe = editing.copy();
+		probe.gameDirectory = text;
+		Path target = probe.resolveGameDirectory(instancesRoot).toAbsolutePath().normalize();
+		for (Instance other : window.context().settings.instances()) {
+			if (!other.id.equals(editing.id) && other.resolveGameDirectory(instancesRoot).toAbsolutePath().normalize().equals(target)) {
+				return other.name;
+			}
+		}
+		return null;
 	}
 
 	private void repair(Instance instance) {

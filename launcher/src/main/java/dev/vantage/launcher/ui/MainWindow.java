@@ -73,7 +73,13 @@ public final class MainWindow {
 		root.getChildren().add(shell);
 		Overlay.install(root);
 		Toasts.install(root);
-		navigate("home");
+		String lastPage = context.settings.settings().lastPage;
+		navigate(pages.containsKey(lastPage) ? lastPage : "home");
+	}
+
+	/** Starts the selected installation (Ctrl+Enter). */
+	public void playSelected() {
+		play(context.settings.selectedInstance(), GameLauncher.QuickPlay.NONE);
 	}
 
 	public StackPane root() {
@@ -178,6 +184,10 @@ public final class MainWindow {
 			return;
 		}
 		current = id;
+		if (!id.equals(context.settings.settings().lastPage)) {
+			context.settings.settings().lastPage = id;
+			context.settings.save();
+		}
 		navButtons.forEach((key, button) -> {
 			button.getStyleClass().remove("active");
 			if (key.equals(id)) {
@@ -227,6 +237,9 @@ public final class MainWindow {
 			session -> {
 				progress.finish();
 				game.started(session);
+				if (session.offline()) {
+					Toasts.info("You are offline: Minecraft starts with your saved session. Singleplayer works; online servers need a connection.");
+				}
 				instance.lastPlayed = System.currentTimeMillis();
 				context.settings.updateInstance(instance);
 				refreshAccountChip();
