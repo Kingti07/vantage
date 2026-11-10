@@ -27,10 +27,10 @@ Wenn hier etwas nicht klappt: `<Datenordner>/logs/launcher.log` sichern und **ni
 liegt unter `%APPDATA%\.vantage`.
 
 ## 2. Code nach `main` übernehmen
-1. Auf GitHub den Pull Request `overhaul/launcher → main` öffnen, kurz durchsehen und **Merge** drücken.
-2. Einen Pull Request `feature/fps-boost → main` anlegen:
-   <https://github.com/Kingti07/vantage/compare/main...feature/fps-boost>. Nach dem ersten Merge zeigt er nur noch die
-   FPS-Änderungen. Prüfen, dass die automatische Prüfung grün ist, dann **Merge**.
+1. Den Pull Request `feature/fps-boost → main` öffnen. Er enthält die komplette Überarbeitung und den FPS-Boost; ein
+   eigener Pull Request für `overhaul/launcher` ist nicht nötig. Falls er noch nicht existiert:
+   <https://github.com/Kingti07/vantage/compare/main...feature/fps-boost>.
+2. Prüfen, dass die automatische Prüfung grün ist, dann **Merge** drücken.
 
 ## 3. Release 0.2.0 veröffentlichen
 Die Version 0.2.0 ist schon eingetragen. In `CHANGELOG.md` beim Abschnitt 0.2.0 noch das Datum ergänzen.
