@@ -17,8 +17,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,7 +56,7 @@ public final class JavaRuntimeManager {
 
 	/** Installs (if necessary) the runtime component and returns the path of its java executable. */
 	public Path ensure(String component, ProgressListener listener, double progressStart, double progressEnd, int threads) throws IOException {
-		Path home = paths.runtimes().resolve(component).resolve(platformKey());
+		Path home = FileUtil.resolveInside(paths.runtimes(), component + "/" + platformKey());
 		Path marker = home.resolve(".vantage-runtime-version");
 		listener.status("Checking Java runtime (" + component + ")");
 
@@ -85,16 +87,18 @@ public final class JavaRuntimeManager {
 
 		listener.status("Downloading Java " + version);
 		JsonObject manifestRef = entry.getAsJsonObject("manifest");
-		JsonObject manifest = JsonParser.parseString(Http.getString(URI.create(manifestRef.get("url").getAsString()))).getAsJsonObject();
+		// The file list is verified like every other download (its SHA-1 is published in the runtime index).
+		Path manifestFile = home.resolveSibling(platformKey() + ".manifest.json");
+		Http.download(URI.create(manifestRef.get("url").getAsString()), manifestFile, "SHA-1", manifestRef.get("sha1").getAsString(), null);
+		JsonObject manifest = JsonParser.parseString(Files.readString(manifestFile)).getAsJsonObject();
+		Set<Path> expected = new HashSet<>();
 		DownloadQueue queue = new DownloadQueue(true);
 		List<Path> executables = new ArrayList<>();
 		List<Map.Entry<Path, String>> links = new ArrayList<>();
 		for (Map.Entry<String, JsonElement> file : manifest.getAsJsonObject("files").entrySet()) {
 			JsonObject info = file.getValue().getAsJsonObject();
-			Path target = home.resolve(file.getKey()).normalize();
-			if (!target.startsWith(home)) {
-				throw new IOException("Refusing runtime file outside of its directory: " + file.getKey());
-			}
+			Path target = FileUtil.resolveInside(home, file.getKey());
+			expected.add(target);
 			switch (info.get("type").getAsString()) {
 				case "directory" -> Files.createDirectories(target);
 				case "file" -> {
@@ -120,8 +124,26 @@ public final class JavaRuntimeManager {
 				Files.createSymbolicLink(link.getKey(), Path.of(link.getValue()));
 			}
 		}
+		removeStaleFiles(home, expected, marker);
 		FileUtil.writeAtomically(marker, version.getBytes(StandardCharsets.UTF_8));
 		return exe;
+	}
+
+	/** Deletes files an older runtime version left behind (files of a running game stay until the next update). */
+	private static void removeStaleFiles(Path home, Set<Path> expected, Path marker) {
+		try (Stream<Path> files = Files.walk(home)) {
+			for (Path file : files.filter(p -> !Files.isDirectory(p, java.nio.file.LinkOption.NOFOLLOW_LINKS)).toList()) {
+				if (!expected.contains(file.toAbsolutePath().normalize()) && !file.equals(marker)) {
+					try {
+						Files.deleteIfExists(file);
+					} catch (IOException ignored) {
+						// in use; removed with the next update
+					}
+				}
+			}
+		} catch (IOException ignored) {
+			// nothing to clean
+		}
 	}
 
 	public static Path executable(Path home) {

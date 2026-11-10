@@ -16,6 +16,24 @@ public final class FileUtil {
 	private static final DateTimeFormatter BACKUP_STAMP = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
 	/**
+	 * Resolves {@code relative} (a path taken from downloaded metadata) against {@code base} and refuses results
+	 * outside of {@code base}, e.g. {@code ../../evil.dll}.
+	 */
+	public static Path resolveInside(Path base, String relative) throws IOException {
+		Path root = base.toAbsolutePath().normalize();
+		Path resolved;
+		try {
+			resolved = root.resolve(relative).normalize();
+		} catch (java.nio.file.InvalidPathException e) {
+			throw new IOException("Invalid file name in download metadata: " + relative, e);
+		}
+		if (!resolved.startsWith(root) || resolved.equals(root)) {
+			throw new IOException("Refusing a file outside of " + root + ": " + relative);
+		}
+		return resolved;
+	}
+
+	/**
 	 * Moves a damaged file out of the way so it is never overwritten, e.g. {@code instances.json} becomes
 	 * {@code instances.broken-20261110-142301.json}. Returns the new location.
 	 */

@@ -32,6 +32,8 @@ import java.util.zip.ZipFile;
  * logging configuration and the Java runtime. Re-running is cheap: files that are already present are skipped.
  */
 public final class GameInstaller {
+	private static final java.util.regex.Pattern ASSET_HASH = java.util.regex.Pattern.compile("[0-9a-f]{40}");
+
 
 	/** Everything {@link GameLauncher} needs to build the command line. */
 	public record PreparedGame(
@@ -75,7 +77,7 @@ public final class GameInstaller {
 
 		// Client jar + libraries
 		DownloadQueue queue = new DownloadQueue(verify);
-		Path clientJar = paths.versions().resolve(vanilla.id()).resolve(vanilla.id() + ".jar");
+		Path clientJar = FileUtil.resolveInside(paths.versions(), vanilla.id() + "/" + vanilla.id() + ".jar");
 		var client = vanilla.downloads().client();
 		queue.add(client.url(), clientJar, client.sha1(), client.size());
 		List<Path> classpath = new ArrayList<>();
@@ -86,7 +88,7 @@ public final class GameInstaller {
 			}
 			Artifact artifact = artifact(library);
 			if (artifact != null) {
-				Path target = paths.libraries().resolve(artifact.path());
+				Path target = FileUtil.resolveInside(paths.libraries(), artifact.path());
 				if (artifact.url() != null && !artifact.url().isBlank()) {
 					queue.add(artifact.url(), target, artifact.sha1(), artifact.size());
 				}
@@ -94,7 +96,7 @@ public final class GameInstaller {
 			}
 			Artifact nativeArtifact = legacyNative(library);
 			if (nativeArtifact != null) {
-				Path target = paths.libraries().resolve(nativeArtifact.path());
+				Path target = FileUtil.resolveInside(paths.libraries(), nativeArtifact.path());
 				queue.add(nativeArtifact.url(), target, nativeArtifact.sha1(), nativeArtifact.size());
 				legacyNatives.add(target);
 			}
@@ -104,7 +106,7 @@ public final class GameInstaller {
 
 		listener.checkCancelled();
 		// Natives: modern LWJGL extracts itself from the classpath into this directory; legacy versions need extraction.
-		Path nativesDir = paths.versions().resolve(merged.id()).resolve("natives");
+		Path nativesDir = FileUtil.resolveInside(paths.versions(), merged.id() + "/natives");
 		Files.createDirectories(nativesDir);
 		for (Path jar : legacyNatives) {
 			extractNatives(jar, nativesDir);
@@ -113,7 +115,7 @@ public final class GameInstaller {
 		listener.checkCancelled();
 		// Assets
 		var indexRef = vanilla.assetIndex();
-		Path indexFile = paths.assets().resolve("indexes").resolve(indexRef.id() + ".json");
+		Path indexFile = FileUtil.resolveInside(paths.assets().resolve("indexes"), indexRef.id() + ".json");
 		DownloadQueue indexQueue = new DownloadQueue(true);
 		indexQueue.add(indexRef.url(), indexFile, indexRef.sha1(), indexRef.size());
 		indexQueue.run(listener, "Downloading asset index", 0.25, 0.27, 1);
@@ -128,6 +130,9 @@ public final class GameInstaller {
 			unique.putIfAbsent(object.hash(), object);
 		}
 		for (AssetObject object : unique.values()) {
+			if (object.hash() == null || !ASSET_HASH.matcher(object.hash()).matches()) {
+				throw new IOException("Invalid asset hash in index " + indexRef.id() + ": " + object.hash());
+			}
 			String prefix = object.hash().substring(0, 2);
 			assets.add("https://resources.download.minecraft.net/" + prefix + "/" + object.hash(),
 				paths.assets().resolve("objects").resolve(prefix).resolve(object.hash()), object.hash(), object.size());
@@ -140,7 +145,7 @@ public final class GameInstaller {
 		String loggingArgument = null;
 		if (vanilla.logging() != null && vanilla.logging().client() != null && vanilla.logging().client().file() != null) {
 			var logging = vanilla.logging().client();
-			loggingConfig = paths.assets().resolve("log_configs").resolve(logging.file().id());
+			loggingConfig = FileUtil.resolveInside(paths.assets().resolve("log_configs"), logging.file().id());
 			DownloadQueue logQueue = new DownloadQueue(true);
 			logQueue.add(logging.file().url(), loggingConfig, logging.file().sha1(), logging.file().size());
 			logQueue.run(listener, "Downloading logging configuration", 0.75, 0.76, 1);
@@ -171,7 +176,7 @@ public final class GameInstaller {
 	}
 
 	private VersionJson vanillaVersion(String gameVersion) throws IOException {
-		Path file = paths.versions().resolve(gameVersion).resolve(gameVersion + ".json");
+		Path file = FileUtil.resolveInside(paths.versions(), gameVersion + "/" + gameVersion + ".json");
 		MojangModels.ManifestEntry entry;
 		try {
 			entry = meta.entry(gameVersion);
@@ -189,7 +194,7 @@ public final class GameInstaller {
 
 	private VersionJson fabricProfile(String gameVersion, String loaderVersion) throws IOException {
 		String id = GameMeta.fabricVersionId(gameVersion, loaderVersion);
-		Path file = paths.versions().resolve(id).resolve(id + ".json");
+		Path file = FileUtil.resolveInside(paths.versions(), id + "/" + id + ".json");
 		if (!Files.isRegularFile(file)) {
 			String body = Http.getString(GameMeta.fabricProfileUri(gameVersion, loaderVersion));
 			FileUtil.writeAtomically(file, body.getBytes(StandardCharsets.UTF_8));
