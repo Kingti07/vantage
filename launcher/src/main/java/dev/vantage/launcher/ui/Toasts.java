@@ -29,6 +29,8 @@ public final class Toasts {
 		stack.setMaxSize(420, StackPane.USE_PREF_SIZE);
 		StackPane.setAlignment(stack, Pos.BOTTOM_RIGHT);
 		StackPane.setMargin(stack, new javafx.geometry.Insets(0, 24, 72, 0));
+		// Above any dialog that opens later, so messages are never hidden behind an overlay.
+		stack.setViewOrder(-1000);
 		root.getChildren().add(stack);
 	}
 

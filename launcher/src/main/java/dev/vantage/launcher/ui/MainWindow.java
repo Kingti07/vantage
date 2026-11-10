@@ -262,7 +262,7 @@ public final class MainWindow {
 				}
 				game.append("[Vantage] Launch failed: " + Ui.message(error));
 				LOGGER.error("Launch failed", error);
-				Overlay.message("Could not start Minecraft", Ui.message(error));
+				Overlay.error("Could not start Minecraft", error);
 			});
 	}
 
@@ -284,7 +284,10 @@ public final class MainWindow {
 			}
 		}
 		LauncherSettings settings = context.settings.settings();
-		if (settings.afterLaunch == LauncherSettings.AfterLaunch.CLOSE) {
+		GameState.LastExit exit = game.lastExitProperty().get();
+		boolean crashed = code != 0 && (exit == null || !exit.stoppedByUser());
+		// "Close after launch" still comes back after a crash, otherwise the player would never learn why.
+		if (settings.afterLaunch == LauncherSettings.AfterLaunch.CLOSE && !crashed) {
 			Platform.exit();
 			return;
 		}
@@ -292,9 +295,32 @@ public final class MainWindow {
 			stage.show();
 		}
 		stage.setIconified(false);
-		if (code != 0) {
-			Toasts.error("Minecraft stopped unexpectedly (exit code " + code + "). See Console or crash reports.");
+		if (crashed && exit != null) {
+			showCrash(exit);
 		}
+	}
+
+	/** Explains a crash with the start of the crash report, or the last errors from the console if there is none. */
+	private void showCrash(GameState.LastExit exit) {
+		java.util.Optional<java.nio.file.Path> report = dev.vantage.launcher.game.CrashReports.newestSince(exit.gameDir(), exit.startedAt());
+		if (report.isPresent()) {
+			try {
+				String excerpt = dev.vantage.launcher.game.CrashReports.excerpt(report.get(), 60);
+				Overlay.report("Minecraft crashed", "Minecraft wrote a crash report. The start of it usually names the mod or "
+					+ "setting that caused the crash. Share it when asking for help.", excerpt, report.get());
+				return;
+			} catch (java.io.IOException e) {
+				LOGGER.warn("Could not read crash report {}", report.get(), e);
+			}
+		}
+		java.util.List<String> problems = game.lines().stream()
+			.filter(l -> l.level() == dev.vantage.launcher.game.GameLogParser.Level.ERROR)
+			.map(dev.vantage.launcher.game.GameLogParser.LogLine::format)
+			.toList();
+		String details = problems.isEmpty() ? "The game printed no errors. Open the Console for its full output."
+			: String.join("\n", problems.subList(Math.max(0, problems.size() - 40), problems.size()));
+		Overlay.report("Minecraft stopped unexpectedly", "The game ended with exit code " + exit.exitCode()
+			+ " and left no crash report. These are its last error messages:", details, null);
 	}
 
 	public static Label badge(String text, String kind) {

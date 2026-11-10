@@ -337,7 +337,7 @@ public final class InstallationsPage implements Page {
 				Toasts.info("Repair cancelled.");
 				return;
 			}
-			Overlay.message("Repair failed", Ui.message(err));
+			Overlay.error("Repair failed", err);
 		});
 	}
 

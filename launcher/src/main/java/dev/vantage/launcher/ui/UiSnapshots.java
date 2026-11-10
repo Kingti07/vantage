@@ -27,6 +27,15 @@ final class UiSnapshots {
 	}
 
 	static void run(MainWindow window, Path folder) {
+		// Optional: replay a captured game output so the console page can be reviewed with real content.
+		String console = System.getProperty("vantage.uiSnapshot.console");
+		if (console != null && !console.isBlank()) {
+			try {
+				Files.readAllLines(Path.of(console)).forEach(window.game()::append);
+			} catch (IOException e) {
+				LOGGER.warn("Could not replay console output from {}", console, e);
+			}
+		}
 		step(window, folder, 0);
 	}
 

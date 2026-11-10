@@ -200,11 +200,23 @@ public final class Ui {
 		}
 	}
 
+	/** A message for the user, with a hint what to do (see {@link ErrorText}). */
 	public static String message(Throwable t) {
-		Throwable root = t;
-		while (root.getCause() != null && root.getMessage() == null) {
-			root = root.getCause();
+		return ErrorText.describe(t).text();
+	}
+
+	/** Opens a file with the program the system associates with it. */
+	public static void openFile(Path file) {
+		if (hostServices != null) {
+			hostServices.showDocument(file.toUri().toString());
+		} else {
+			background(() -> {
+				try {
+					openNative(file.toAbsolutePath().toString());
+				} catch (IOException | RuntimeException e) {
+					LOGGER.warn("Could not open {}", file, e);
+				}
+			});
 		}
-		return root.getMessage() != null ? root.getMessage() : root.getClass().getSimpleName();
 	}
 }

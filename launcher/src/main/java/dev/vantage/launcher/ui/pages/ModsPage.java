@@ -152,7 +152,7 @@ public final class ModsPage implements Page {
 			showPlan(manager, plan, afterInstall);
 		}, err -> {
 			progress.finish();
-			Overlay.message("Cannot install " + title, Ui.message(err));
+			Overlay.error("Cannot install " + title, err);
 		});
 		progress.status("Resolving dependencies for " + title);
 	}

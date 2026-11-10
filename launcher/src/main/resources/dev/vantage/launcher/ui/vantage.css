@@ -250,3 +250,12 @@
 .spinner .increment-arrow-button:hover, .spinner .decrement-arrow-button:hover { -fx-background-color: derive(-v-surface-3, 25%); }
 .spinner .increment-arrow, .spinner .decrement-arrow { -fx-background-color: -v-muted; }
 .task-bar .small-button { -fx-padding: 4 10 4 10; -fx-font-size: 12px; }
+.console-list { -fx-background-color: #07080b; -fx-background-radius: 10; -fx-border-color: -v-border; -fx-border-radius: 10; -fx-padding: 6; }
+.console-list .list-cell { -fx-font-family: "Consolas", "Menlo", "Monospaced"; -fx-font-size: 12px; -fx-padding: 1 6 1 6; -fx-text-fill: #c9ced8; }
+.console-list .list-cell:selected { -fx-background-color: derive(-v-accent, -65%); }
+.console-list .list-cell.log-error { -fx-text-fill: #ff6b6b; }
+.console-list .list-cell.log-warn { -fx-text-fill: #ffb547; }
+.console-list .list-cell.log-debug { -fx-text-fill: #6b7280; }
+.console-list .list-cell.log-launcher { -fx-text-fill: -v-accent; }
+.report-area { -fx-font-family: "Consolas", "Menlo", "Monospaced"; -fx-font-size: 12px; }
+.report-area .content { -fx-background-color: #07080b; }

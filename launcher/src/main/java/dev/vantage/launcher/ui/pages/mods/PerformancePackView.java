@@ -159,7 +159,7 @@ public final class PerformancePackView {
 			onShow();
 		}, err -> {
 			progress.finish();
-			Overlay.message("Installation failed", Ui.message(err));
+			Overlay.error("Installation failed", err);
 		});
 	}
 }

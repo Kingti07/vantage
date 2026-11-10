@@ -151,21 +151,21 @@ public final class AccountsPage implements Page {
 				close.run();
 				try {
 					window.context().accounts.put(account);
+					Toasts.success("Signed in as " + account.username() + ".");
 				} catch (java.io.IOException ex) {
-					Toasts.error("Signed in, but the account could not be saved: " + ex.getMessage());
+					Overlay.error("Signed in, but the account could not be saved", ex);
 				}
-				Toasts.success("Signed in as " + account.username() + ".");
 				window.refreshAccountChip();
 				onShow();
 			}, err -> {
 				if (!cancelled.get()) {
 					close.run();
-					Overlay.message("Sign-in failed", Ui.message(err));
+					Overlay.error("Sign-in failed", err);
 				}
 			});
 		}, err -> {
 			close.run();
-			Overlay.message("Sign-in failed", Ui.message(err));
+			Overlay.error("Sign-in failed", err);
 		});
 	}
 }

@@ -292,7 +292,7 @@ public final class InstalledModsView {
 			onShow();
 		}, err -> {
 			progress.finish();
-			Overlay.message("Update failed", Ui.message(err));
+			Overlay.error("Update failed", err);
 		});
 	}
 
