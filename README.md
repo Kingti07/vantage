@@ -38,6 +38,33 @@ More documents: [FEATURES.md](FEATURES.md) (feature tracker), [TODO.md](TODO.md)
   keyboard shortcuts (Ctrl+1…6 pages, Ctrl+Enter play, Enter/Escape in dialogs); plain-language error messages with
   a hint and "Copy details" for bug reports.
 
+## Performance
+
+Vantage combines three things for a high, steady frame rate:
+
+* **Performance mods by default.** Sodium, Lithium, ImmediatelyFast, FerriteCore and EntityCulling are installed from
+  Modrinth for new installations (never bundled; each under its own license). Installations from 0.1.0 are asked once.
+  Turn them off under Installations > Edit > Performance mods.
+* **Experimental Vulkan renderer** (VulkanMod) per installation, for the highest frame rates. It disables the mods
+  that need OpenGL while it is on; Motion Blur and some mods do not work with it.
+* **Launcher tuning** (Settings > Performance): whole heap up front with tuned G1, optional low-latency ZGC, "above
+  normal" game priority on Windows, optional dedicated-GPU preference for laptops. In game, the FPS Boost preset sets
+  the video options for maximum frame rate.
+
+Measured with `launchBenchmark` on an RTX 4060 Ti at 1280x720 (average FPS, 1% low in brackets):
+
+| Render distance | Without performance mods | Performance mods (default) | VulkanMod (experimental) |
+|---|---|---|---|
+| 12 | 842 (377) | 905 (444) | 2108 (647) |
+| 32 | 414 (206) | 795 (344) | 1290 (471) |
+
+With the 0.2.0 client's cheaper HUD text the performance-mod result at render distance 12 rises to 1008 (568), and to
+1066 (600) with the in-game FPS Boost preset. Single 30-second runs; repeated runs vary by a few percent, and runs
+while other programs use the GPU are much lower.
+
+On NVIDIA cards Sodium switches off the driver's "threaded optimization" to avoid crashes, so at very high frame rates
+and short render distances its gain is small; it grows with the render distance and on slower GPUs.
+
 ## Download
 
 Ready-to-run builds are on the [Releases page](https://github.com/Kingti07/vantage/releases):
@@ -77,8 +104,10 @@ Run the launcher with `java -jar launcher/build/libs/vantage-launcher-<version>-
 
 | Command | What it verifies |
 |---|---|
-| `./gradlew test` | 67 unit tests, all offline (local HTTP server and temporary folders): settings loading, repair and migration; account store, encryption and concurrent writes; downloads (resume, hash mismatch, stalled connection, cancel, offline); download queue; installation management; launch arguments; version JSON merging; update selection, checksums, staging and rejection; console log parsing; error messages; mod analysis; version predicates |
+| `./gradlew test` | 76 unit tests, all offline (local HTTP server and temporary folders): settings loading, repair and migration; account store, encryption and concurrent writes; downloads (resume, hash mismatch, stalled connection, cancel, offline); download queue; installation management; launch arguments; version JSON merging; update selection, checksums, staging and rejection; console log parsing; error messages; mod analysis; version predicates |
 | `./gradlew :launcher:launchSmoke -PsmokeDir=<empty dir>` | Full pipeline into a throwaway folder: Mojang version, assets, libraries, Java runtime, Fabric, bundled client and Fabric API, launch, then the in-game smoke test (placeholder account, singleplayer only) |
+| `./gradlew :launcher:launchSmoke -PsmokeDir=<dir> -PsmokeMods=sodium,lithium` | The same with other Modrinth mods installed first: compatibility check including the mixin audit |
+| `./gradlew :launcher:launchBenchmark -PbenchDir=<dir> -PbenchProfile=<label> -PbenchRd=12 -PbenchMods=sodium,... -PbenchPreset=true` | FPS benchmark in a fixed test world (average, median, 1% and 0.1% low) with the given render distance, mods and optionally the FPS Boost preset; writes `benchmark-<label>.json` |
 | `./gradlew :client:runSmokeTest` | Starts Minecraft with Vantage, audits every mixin, opens every Vantage screen, creates a test world and exits |
 | `java -Dvantage.dataDir=<tmp> -Dvantage.uiSnapshot=<dir> -jar <launcher jar>` | Opens every launcher page and saves PNG snapshots; add `-Dvantage.uiSnapshot.console=<game output file>` to fill the console |
 
@@ -156,6 +185,8 @@ Nothing needs to be edited by hand; every setting has a UI and saves automatical
   signed, so macOS Gatekeeper ("right-click → Open") and Windows SmartScreen may warn on first start.
 * The launcher UI is English only.
 * Minecraft versions before 1.7.10 are not supported; the Vantage client mod itself runs on 1.21.11 only.
+* The Vulkan renderer is experimental: Minecraft's screenshot function does not capture its image, Motion Blur is
+  off, and mods that hook OpenGL do not work with it.
 * Like the official launcher, the game's access token is passed on the game's command line (visible to programs of
   the same user); it is masked in all logs.
 

@@ -16,8 +16,10 @@ manual checks.
       pre-release.
 - [ ] First run of the new release workflow with the portable matrix (Windows, macOS, Linux runners). The CI
       workflow runs green on Linux since 2026-11-10.
-- [ ] Coexistence with Sodium, Iris, Lithium, ImmediatelyFast: Vantage mixins target vanilla methods that some of
-      these mods also modify (light texture, fog, item rendering). Needs an in-game test with the performance pack.
+- [x] Coexistence with Sodium, Lithium, ImmediatelyFast, FerriteCore and EntityCulling: the in-game smoke test with
+      the mixin audit passes with all of them (2026-11-10). Iris (shaders) is still untested.
+- [ ] VulkanMod: the smoke test passes, but Minecraft's screenshots do not capture its image, so whether Vantage's
+      HUD and effects look right under Vulkan needs a look by a human (TESTPLAN 11.4).
 
 ## Product gaps
 - [ ] Code signing (Windows SmartScreen, macOS Gatekeeper) – needs paid certificates.

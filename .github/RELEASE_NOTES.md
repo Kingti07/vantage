@@ -1,6 +1,11 @@
-Vantage is a Minecraft PvP client with its own launcher.
+Vantage is a Minecraft PvP client with its own launcher. Sign in with your Microsoft account, press Play, done.
 
-**Pre-release:** signing in with a Microsoft account starts working once Microsoft approves the launcher's Azure app for the Minecraft API (review pending). Until then the launcher shows "not approved yet".
+### What's new
+- **More FPS out of the box:** new installations get Sodium, Lithium, ImmediatelyFast, FerriteCore and EntityCulling automatically (up to about +90% FPS in our benchmark at far render distance). Installations from 0.1.0 are asked once.
+- **Experimental Vulkan renderer** (VulkanMod) per installation: in our benchmark 2.5 to 3 times the frame rate, but not every mod works with it.
+- **Smoother games:** tuned Java memory settings, optional low-latency garbage collector, higher game priority and an option to use the dedicated graphics card on laptops.
+- **A much more robust launcher:** downloads resume after interruptions and never hang. Your data is backed up instead of overwritten when something goes wrong. Updates are verified and fall back automatically. Sign-in data is encrypted, the console is readable and a crash dialog explains crashes.
+- **No Java needed:** portable packages with their own Java runtime.
 
 ### Which file do I need?
 | File | For |
@@ -11,10 +16,6 @@ Vantage is a Minecraft PvP client with its own launcher.
 | `vantage-launcher-*-all-<platform>.jar` | Single-file launcher for Windows (`win`), macOS (`mac`, `mac-aarch64`) or Linux (`linux`); needs Java 21 (`java -jar <file>`). |
 | `vantage-client-*.jar` | Only the in-game client mod (Fabric 1.21.11, needs Fabric API) |
 
-The launcher installs Minecraft, Fabric and the Vantage client by itself and updates itself from future releases; every update is checked against the SHA-256 checksums in `SHA256SUMS.txt`. Only the Windows builds have been tested so far.
+The launcher installs Minecraft, Fabric and the Vantage client by itself and updates itself from future releases; every update is checked against the SHA-256 checksums in `SHA256SUMS.txt`. Launchers of version 0.1.0 offer this update automatically. The Windows builds are tested; macOS and Linux builds are new and not yet tested on real machines.
 
-### Highlights
-- Launcher: Microsoft sign-in with encrypted token storage, installations (version, Fabric, RAM, Java), Mojang Java runtimes, resumable downloads with speed and remaining time, Modrinth browser with dependency-checked installs and updates, readable console and crash reports, verified self-update
-- In game: Vantage main menu, drag-and-drop HUD editor with 20 elements, PvP/camera/visual/performance modules, keybind manager with conflict detection, in-game Modrinth browser
-
-See README.md, CHANGELOG.md, TESTPLAN.md and TODO.md for details and known gaps.
+See README.md and CHANGELOG.md for all details.

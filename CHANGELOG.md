@@ -3,11 +3,40 @@
 All notable changes to Vantage. Versions follow [Semantic Versioning](https://semver.org); IDs such as F1 or S2 refer
 to the findings in [AUDIT.md](AUDIT.md).
 
-## Unreleased – launcher overhaul (November 2026)
+## 0.2.0 – release date: the day Microsoft approves sign-in (see LAUNCH.md)
 
-A complete review and overhaul of the launcher after its first release. Settings, installations and accounts of
-0.1.0 keep working and are migrated automatically. The in-game client is unchanged apart from the shared code it
-uses for accounts.
+The first release meant for everyone: a complete overhaul of the launcher and a large frame-rate boost.
+Settings, installations and accounts of 0.1.0 keep working and are migrated automatically.
+
+### More FPS
+Measured with the new `launchBenchmark` (same test world, camera turning at a constant speed, 30 s, no frame cap)
+on a Windows 11 PC with an RTX 4060 Ti, 1280x720:
+
+| Setup | Render distance | Average FPS | 1% low |
+|---|---|---|---|
+| Without performance mods | 12 | 842 | 377 |
+| + performance mods (new default) | 12 | 905 (+7%) | 444 (+18%) |
+| + cheaper Vantage HUD text (0.2.0 client) | 12 | 1008 (+20%) | 568 (+51%) |
+| + FPS Boost preset applied in game | 12 | 1066 (+27%) | 600 (+59%) |
+| + VulkanMod (experimental option) | 12 | 2108 (+150%) | 647 (+72%) |
+| Without performance mods | 32 | 414 | 206 |
+| + performance mods (new default) | 32 | 795 (+92%) | 344 (+67%) |
+| + VulkanMod (experimental option) | 32 | 1290 (+212%) | 471 (+129%) |
+
+- New installations install Sodium, Lithium, ImmediatelyFast, FerriteCore and EntityCulling from Modrinth on their
+  first start; installations from 0.1.0 are asked once. Can be turned off per installation.
+- Experimental "Vulkan renderer" per installation (VulkanMod). It switches off the mods that need OpenGL and turns
+  them back on when you switch back. Motion Blur is not available with it.
+- Launcher: the game gets its whole memory up front with tuned G1 settings; optional low-latency ZGC; the game runs
+  with "above normal" priority (Windows); optional "use the high-performance graphics card" for laptops.
+- Client: HUD text is rebuilt at most 20 times a second instead of twice per frame; the FPS Boost preset also sets
+  fast graphics, opaque leaves, no smooth lighting, fade-in, vignette, texture filtering, menu blur, frame cap or
+  V-Sync.
+- Developer tools: `launchBenchmark` and `launchSmoke -PsmokeMods=...` for compatibility tests with other mods.
+
+### Release process
+- `v1.2.3` tags become normal releases (found by every launcher, also 0.1.0); `v1.2.3-beta.1` become pre-releases.
+- `LAUNCH.md`: checklist for the day sign-in is approved.
 
 ### Reliability and user data
 - Damaged `launcher.json`, `instances.json` or `accounts.json` files are kept as `*.broken-<date>.json` instead of

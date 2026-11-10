@@ -97,5 +97,17 @@ das, was nur ein Mensch am echten PC prüfen kann. Hake jeden Punkt ab und notie
 | 10.2 | Datenordner löschen | Alle Spieldateien, Konten und Logs sind weg. **Vorher Welten aus `instances/<id>/saves` sichern.** |
 | 10.3 | Nur unter Windows: Anmeldeschlüssel | Steckt in `token-key.dpapi` im Datenordner und ist mit ihm gelöscht. |
 
+## 11. Leistung (ab 0.2.0)
+| # | Was du tust | Erwartetes Ergebnis |
+|---|---|---|
+| 11.1 | Neue Installation anlegen und „Play“ | Vor dem Spielstart werden Sodium, Lithium, ImmediatelyFast, FerriteCore und EntityCulling installiert; in Mods → Installed stehen sie. |
+| 11.2 | Mit einem Datenordner von 0.1.0 starten | Einmalige Frage „More FPS with performance mods?“. „Install on next start“ installiert sie beim nächsten „Play“. Die Frage kommt nie wieder. |
+| 11.3 | Installation bearbeiten → „Performance mods“ aus, „Play“ | Die Leistungs-Mods sind deaktiviert (nicht gelöscht). Wieder an → beim nächsten Start aktiv. |
+| 11.4 | „Vulkan renderer“ an, „Play“ | VulkanMod wird installiert, Sodium und ImmediatelyFast sind aus. Das Spiel läuft. Bitte prüfen: Sieht die Welt richtig aus, ist das Vantage-HUD da? |
+| 11.5 | „Vulkan renderer“ wieder aus, „Play“ | Sodium und ImmediatelyFast sind wieder an, VulkanMod ist aus. |
+| 11.6 | Settings → Performance → „Use the high-performance graphics card“ an, „Play“ (Laptop mit zwei Grafikchips) | Windows-Einstellungen → System → Anzeige → Grafik: Für `javaw.exe` des Minecraft-Java steht „Hohe Leistung“. Aus → Eintrag verschwindet. |
+| 11.7 | Im Spiel: Vantage-Menü → Performance → FPS Boost Preset → „Apply“ | Videoeinstellungen: Grafik „Schnell“, keine Wolken, kein FPS-Limit, kein V-Sync. |
+| 11.8 | Settings → Performance → „Low-latency memory management“ an, „Play“ | Spiel startet normal. In der Console steht beim Start `-XX:+UseZGC` im Startbefehl (Launcher-Log). |
+
 ## Nicht auf Windows getestet (bitte auf macOS und Linux wiederholen)
 Punkte 1, 2.4 (Schlüssel im macOS-Schlüsselbund bzw. Linux-Schlüsselbund statt `token-key.dpapi`), 3 und 4.
