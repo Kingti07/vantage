@@ -10,6 +10,8 @@ dependencies {
 	// Both are provided at runtime: by Minecraft inside the game, and by the launcher's own dependencies.
 	compileOnly "com.google.code.gson:gson:${gson_version}"
 	compileOnly "org.slf4j:slf4j-api:${slf4j_version}"
+	// Windows DPAPI for the sign-in token key (KeyStorage). Bundled by the launcher, shipped by Minecraft in game.
+	compileOnly "net.java.dev.jna:jna-platform:${jna_version}"
 
 	// Pure-Java WebP decoder: most Modrinth icons and screenshots are WebP, which neither JavaFX nor
 	// Minecraft's image loader can read.
@@ -17,6 +19,7 @@ dependencies {
 
 	testImplementation "com.google.code.gson:gson:${gson_version}"
 	testImplementation "org.slf4j:slf4j-api:${slf4j_version}"
+	testImplementation "net.java.dev.jna:jna-platform:${jna_version}"
 	testImplementation platform("org.junit:junit-bom:${junit_version}")
 	testImplementation 'org.junit.jupiter:junit-jupiter'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

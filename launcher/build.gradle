@@ -29,6 +29,8 @@ dependencies {
 	implementation project(':common')
 	implementation "com.google.code.gson:gson:${gson_version}"
 	implementation "org.slf4j:slf4j-api:${slf4j_version}"
+	// Protects the sign-in token key with Windows DPAPI (see common KeyStorage).
+	implementation "net.java.dev.jna:jna-platform:${jna_version}"
 	runtimeOnly "org.slf4j:slf4j-simple:${slf4j_version}"
 
 	['base', 'graphics', 'controls'].each { module ->
