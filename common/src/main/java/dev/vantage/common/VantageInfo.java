@@ -4,10 +4,13 @@ package dev.vantage.common;
  * Static identity of the project, shared by the launcher and the in-game client.
  */
 public final class VantageInfo {
+	private static final java.util.Properties BUILD_INFO = loadBuildInfo();
+
 	public static final String NAME = "Vantage";
-	public static final String VERSION = "0.1.0";
+	/** Version of this build, taken from {@code project_version} in gradle.properties. */
+	public static final String VERSION = BUILD_INFO.getProperty("version", "0.0.0-dev");
 	/** Minecraft version the bundled in-game client mod is built for. */
-	public static final String CLIENT_MINECRAFT_VERSION = "1.21.11";
+	public static final String CLIENT_MINECRAFT_VERSION = BUILD_INFO.getProperty("minecraft_version", "1.21.11");
 	/** Loader used by every Vantage instance. */
 	public static final String LOADER = "fabric";
 
@@ -32,5 +35,17 @@ public final class VantageInfo {
 	public static final String DEFAULT_MSA_CLIENT_ID = "bf947917-4c6a-4e2f-80ac-22d5bad7ed48";
 
 	private VantageInfo() {
+	}
+
+	private static java.util.Properties loadBuildInfo() {
+		java.util.Properties properties = new java.util.Properties();
+		try (java.io.InputStream in = VantageInfo.class.getResourceAsStream("build-info.properties")) {
+			if (in != null) {
+				properties.load(in);
+			}
+		} catch (java.io.IOException ignored) {
+			// fall back to the defaults below
+		}
+		return properties;
 	}
 }

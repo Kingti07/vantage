@@ -211,7 +211,8 @@ public final class SettingsPage implements Page {
 		Button check = Ui.button("Check now", Icons.REFRESH, "ghost");
 		check.setOnAction(e -> checkForUpdates(window, true));
 		return section("Updates",
-			setting("Release channel", "GitHub repository whose releases publish Vantage builds. Leave empty for the official repository.", repository),
+			setting("Release channel", "GitHub repository whose releases publish Vantage builds. Leave empty for the official "
+				+ "repository; only enter another one if you trust its owner. Every update is checked against its published SHA-256 checksum.", repository),
 			setting("Check on start", "Look for a new version every time the launcher opens.", auto),
 			Ui.row(10, Ui.label("Current version " + VantageInfo.VERSION, "muted"), Ui.spacer(), check));
 	}
@@ -228,7 +229,13 @@ public final class SettingsPage implements Page {
 				return;
 			}
 			var r = release.get();
-			Overlay.confirm("Vantage " + r.version() + " is available", r.notes().isBlank() ? r.name() : r.notes(), "Download update", false, () -> {
+			String repository = settings.effectiveUpdateRepository();
+			String notes = r.notes().isBlank() ? r.name() : r.notes();
+			if (!dev.vantage.launcher.update.SelfUpdater.isOfficialRepository(repository)) {
+				notes = "Warning: this update comes from \"" + repository + "\", not from the official Vantage repository. "
+					+ "Only install it if you trust its owner.\n\n" + notes;
+			}
+			Overlay.confirm("Vantage " + r.version() + " is available", notes, "Download update", false, () -> {
 				var progress = window.taskBar().begin("Downloading update", true);
 				Ui.async(() -> window.context().updater.download(r, platform, progress), path -> {
 					progress.finish();

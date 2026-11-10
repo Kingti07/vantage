@@ -29,6 +29,7 @@ public final class LauncherApp extends Application {
 		stage.setMinHeight(640);
 		stage.getIcons().add(appIcon());
 		stage.show();
+		dev.vantage.launcher.Main.onWindowShown(context.paths);
 		window.onShown();
 		String snapshots = System.getProperty("vantage.uiSnapshot");
 		if (snapshots != null && !snapshots.isBlank()) {

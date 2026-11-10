@@ -25,3 +25,12 @@ dependencies {
 test {
 	useJUnitPlatform()
 }
+
+// The version is defined once in gradle.properties; VantageInfo reads it from this generated resource.
+processResources {
+	def props = [version: project.version, minecraft_version: minecraft_version]
+	inputs.properties props
+	filesMatching('dev/vantage/common/build-info.properties') {
+		expand props
+	}
+}

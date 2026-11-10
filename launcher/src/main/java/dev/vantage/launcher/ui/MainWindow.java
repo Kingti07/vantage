@@ -101,6 +101,9 @@ public final class MainWindow {
 		if (!context.startupWarnings.isEmpty()) {
 			Overlay.message("Some saved data had to be repaired", String.join("\n\n", context.startupWarnings));
 		}
+		dev.vantage.launcher.Main.failedUpdate().ifPresent(version -> Overlay.message("Update could not be started",
+			"Vantage " + version + " did not start correctly, so you are still using version " + VantageInfo.VERSION
+				+ ". This update will not be offered again. Please report the problem on GitHub."));
 		if (settings.checkUpdatesOnStart) {
 			SettingsPage.checkForUpdates(this, false);
 		}
