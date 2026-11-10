@@ -20,9 +20,12 @@ public record MinecraftAccount(
 	String xuid,
 	String skinUrl
 ) {
-	/** Token is considered stale 5 minutes before it actually expires. */
+	/** Refresh this long before the token actually expires, so it never runs out during start-up. */
+	public static final long REFRESH_MARGIN_MS = 5 * 60_000L;
+
+	/** True if the access token is missing or about to expire. */
 	public boolean needsRefresh() {
-		return minecraftAccessToken == null || System.currentTimeMillis() > minecraftTokenExpiry - 5 * 60_000L;
+		return minecraftAccessToken == null || System.currentTimeMillis() > minecraftTokenExpiry - REFRESH_MARGIN_MS;
 	}
 
 	/** UUID in the dashed 8-4-4-4-12 form. */

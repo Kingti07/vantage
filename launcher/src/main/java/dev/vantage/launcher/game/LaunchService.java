@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 /**
  * End-to-end "Play" pipeline: refresh the account, install/verify game files, prepare the mods folder (bundled
@@ -37,6 +38,8 @@ public final class LaunchService {
 	private static final Logger LOGGER = LoggerFactory.getLogger(LaunchService.class);
 	public static final String BUNDLED_CLIENT_RESOURCE = "/bundled/vantage-client.jar";
 	public static final String CLIENT_JAR_NAME = "vantage-client.jar";
+	/** Left by the in-game account switcher (client AccountsScreen.RELAUNCH_FILE) to ask for a restart with another account. */
+	public static final String RELAUNCH_REQUEST_FILE = "relaunch-request.json";
 
 	/** A running game. */
 	public record Session(Process process, Instance instance, Path gameDir) {
@@ -139,6 +142,29 @@ public final class LaunchService {
 					.filter(ModProblem::isError).map(ModProblem::message).findFirst().orElse("unknown error"));
 			}
 			mods.execute(plan, progress);
+		}
+	}
+
+	/** Calls {@code onExit} with the exit code, on a background thread, once the game process has ended. */
+	public static void whenExited(Session session, IntConsumer onExit) {
+		Thread waiter = new Thread(() -> {
+			try {
+				onExit.accept(session.process().waitFor());
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}, "vantage-game-waiter");
+		waiter.setDaemon(true);
+		waiter.start();
+	}
+
+	/** True (once) if the game asked to be restarted with another account; the request is consumed. */
+	public boolean takeRelaunchRequest() {
+		try {
+			return Files.deleteIfExists(paths.root().resolve(RELAUNCH_REQUEST_FILE));
+		} catch (IOException e) {
+			LOGGER.warn("Could not process the relaunch request", e);
+			return false;
 		}
 	}
 

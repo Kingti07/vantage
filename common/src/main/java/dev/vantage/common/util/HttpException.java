@@ -4,6 +4,8 @@ import java.io.IOException;
 
 /** An HTTP request completed but returned a non-success status code. */
 public final class HttpException extends IOException {
+	private static final long serialVersionUID = 1L;
+
 	private final int status;
 	private final String body;
 

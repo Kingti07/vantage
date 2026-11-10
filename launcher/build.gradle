@@ -59,11 +59,6 @@ processResources {
 		into 'bundled'
 		rename { 'vantage-client.jar' }
 	}
-	def props = [version: project.version, minecraft_version: minecraft_version, loader_version: loader_version]
-	inputs.properties props
-	filesMatching('launcher.properties') {
-		expand props
-	}
 }
 
 // Single runnable jar: java -jar vantage-launcher-<version>-all.jar

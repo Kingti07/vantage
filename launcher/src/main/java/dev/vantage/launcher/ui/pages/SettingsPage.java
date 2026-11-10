@@ -209,56 +209,12 @@ public final class SettingsPage implements Page {
 			save();
 		});
 		Button check = Ui.button("Check now", Icons.REFRESH, "ghost");
-		check.setOnAction(e -> checkForUpdates(window, true));
+		check.setOnAction(e -> dev.vantage.launcher.ui.UpdatePrompt.check(window, true));
 		return section("Updates",
 			setting("Release channel", "GitHub repository whose releases publish Vantage builds. Leave empty for the official "
 				+ "repository; only enter another one if you trust its owner. Every update is checked against its published SHA-256 checksum.", repository),
 			setting("Check on start", "Look for a new version every time the launcher opens.", auto),
 			Ui.row(10, Ui.label("Current version " + VantageInfo.VERSION, "muted"), Ui.spacer(), check));
-	}
-
-	/** Checks the release channel and offers to download a newer launcher (which also contains the newer client). */
-	public static void checkForUpdates(MainWindow window, boolean userInitiated) {
-		LauncherSettings settings = window.context().settings.settings();
-		String platform = platformClassifier();
-		Ui.async(() -> window.context().updater.check(settings.effectiveUpdateRepository(), platform), release -> {
-			if (release.isEmpty()) {
-				if (userInitiated) {
-					Toasts.success("You are on the latest version (" + VantageInfo.VERSION + ").");
-				}
-				return;
-			}
-			var r = release.get();
-			String repository = settings.effectiveUpdateRepository();
-			String notes = r.notes().isBlank() ? r.name() : r.notes();
-			if (!dev.vantage.launcher.update.SelfUpdater.isOfficialRepository(repository)) {
-				notes = "Warning: this update comes from \"" + repository + "\", not from the official Vantage repository. "
-					+ "Only install it if you trust its owner.\n\n" + notes;
-			}
-			Overlay.confirm("Vantage " + r.version() + " is available", notes, "Download update", false, () -> {
-				var progress = window.taskBar().begin("Downloading update", true);
-				Ui.async(() -> window.context().updater.download(r, platform, progress), path -> {
-					progress.finish();
-					Overlay.message("Update ready", "Vantage " + r.version() + " has been downloaded. It starts automatically the next time you open the launcher.");
-				}, err -> {
-					progress.finish();
-					Toasts.error("Update download failed: " + Ui.message(err));
-				});
-			});
-		}, err -> {
-			if (userInitiated) {
-				Toasts.error(Ui.message(err));
-			}
-		});
-	}
-
-	private static String platformClassifier() {
-		boolean arm = OperatingSystem.isArm64();
-		return switch (OperatingSystem.current()) {
-			case WINDOWS -> "win";
-			case MACOS -> arm ? "mac-aarch64" : "mac";
-			case LINUX -> arm ? "linux-aarch64" : "linux";
-		};
 	}
 
 	private Node storage() {

@@ -141,6 +141,7 @@ public final class AccountStore {
 	}
 
 	/** Applies {@code change} to the current file content (not to a possibly stale copy) and saves the result. */
+	@SuppressWarnings("try") // the lock is held for the duration of the block, never used directly
 	private void modify(Consumer<Data> change) throws IOException {
 		synchronized (JVM_LOCK) {
 			Files.createDirectories(file.toAbsolutePath().getParent());

@@ -76,6 +76,16 @@ public final class SelfUpdater {
 		this.paths = paths;
 	}
 
+	/** Platform part of the release asset name: win, mac, mac-aarch64, linux or linux-aarch64. */
+	public static String currentPlatform() {
+		boolean arm = dev.vantage.common.util.OperatingSystem.isArm64();
+		return switch (dev.vantage.common.util.OperatingSystem.current()) {
+			case WINDOWS -> "win";
+			case MACOS -> arm ? "mac-aarch64" : "mac";
+			case LINUX -> arm ? "linux-aarch64" : "linux";
+		};
+	}
+
 	public static boolean isOfficialRepository(String repository) {
 		return VantageInfo.DEFAULT_UPDATE_REPOSITORY.equalsIgnoreCase(repository);
 	}

@@ -5,6 +5,7 @@ import dev.vantage.common.auth.MinecraftAccount;
 import dev.vantage.common.util.ProgressListener;
 import dev.vantage.launcher.LauncherContext;
 import dev.vantage.launcher.game.GameLauncher;
+import dev.vantage.launcher.game.LaunchService;
 import dev.vantage.launcher.settings.Instance;
 import dev.vantage.launcher.settings.LauncherSettings;
 import dev.vantage.launcher.ui.pages.AccountsPage;
@@ -105,7 +106,7 @@ public final class MainWindow {
 			"Vantage " + version + " did not start correctly, so you are still using version " + VantageInfo.VERSION
 				+ ". This update will not be offered again. Please report the problem on GitHub."));
 		if (settings.checkUpdatesOnStart) {
-			SettingsPage.checkForUpdates(this, false);
+			UpdatePrompt.check(this, false);
 		}
 	}
 
@@ -238,19 +239,10 @@ public final class MainWindow {
 					case KEEP_OPEN -> {
 					}
 				}
-				Thread waiter = new Thread(() -> {
-					int code;
-					try {
-						code = session.process().waitFor();
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-						return;
-					}
+				LaunchService.whenExited(session, code -> {
 					game.append("[Vantage] Minecraft exited with code " + code);
 					Platform.runLater(() -> onGameExit(code));
-				}, "vantage-game-waiter");
-				waiter.setDaemon(true);
-				waiter.start();
+				});
 			},
 			error -> {
 				progress.finish();
@@ -269,19 +261,12 @@ public final class MainWindow {
 	private void onGameExit(int code) {
 		Instance lastInstance = context.settings.selectedInstance();
 		game.exited(code);
-		// The in-game Accounts screen asks for a restart with another account by leaving this marker behind.
-		java.nio.file.Path relaunch = context.paths.root().resolve("relaunch-request.json");
-		if (java.nio.file.Files.exists(relaunch)) {
-			try {
-				java.nio.file.Files.delete(relaunch);
-				context.accounts.load();
-				refreshAccountChip();
-				game.append("[Vantage] Restarting with account " + context.accounts.selected().map(MinecraftAccount::username).orElse("?"));
-				play(lastInstance, GameLauncher.QuickPlay.NONE);
-				return;
-			} catch (java.io.IOException e) {
-				LOGGER.warn("Could not process relaunch request", e);
-			}
+		if (context.launchService.takeRelaunchRequest()) {
+			context.accounts.reload();
+			refreshAccountChip();
+			game.append("[Vantage] Restarting with account " + context.accounts.selected().map(MinecraftAccount::username).orElse("?"));
+			play(lastInstance, GameLauncher.QuickPlay.NONE);
+			return;
 		}
 		LauncherSettings settings = context.settings.settings();
 		GameState.LastExit exit = game.lastExitProperty().get();
