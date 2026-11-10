@@ -133,7 +133,7 @@ public final class PerformancePackView {
 			return;
 		}
 		ModManager manager = page.manager();
-		ProgressListener progress = page.window().taskBar().begin("Installing performance pack");
+		var progress = page.window().taskBar().begin("Installing performance pack", true);
 		Ui.async(() -> {
 			List<String> installed = new ArrayList<>();
 			List<String> skipped = new ArrayList<>();
@@ -149,7 +149,7 @@ public final class PerformancePackView {
 			}
 			return Map.entry(installed, skipped);
 		}, result -> {
-			page.window().taskBar().finish();
+			progress.finish();
 			if (!result.getKey().isEmpty()) {
 				Toasts.success("Installed " + String.join(", ", result.getKey()) + ".");
 			}
@@ -158,7 +158,7 @@ public final class PerformancePackView {
 			}
 			onShow();
 		}, err -> {
-			page.window().taskBar().finish();
+			progress.finish();
 			Overlay.message("Installation failed", Ui.message(err));
 		});
 	}

@@ -321,7 +321,7 @@ public final class InstallationsPage implements Page {
 	}
 
 	private void repair(Instance instance) {
-		ProgressListener progress = window.taskBar().begin("Verifying " + instance.name);
+		var progress = window.taskBar().begin("Verifying " + instance.name, true);
 		Ui.async(() -> {
 			GameMeta meta = window.context().meta;
 			String loader = instance.loaderVersion.isBlank() ? meta.latestLoader(instance.minecraftVersion) : instance.loaderVersion;
@@ -329,10 +329,14 @@ public final class InstallationsPage implements Page {
 			return window.context().installer.repair(instance.minecraftVersion, loader, java,
 				window.context().settings.settings().downloadThreads, progress);
 		}, game -> {
-			window.taskBar().finish();
+			progress.finish();
 			Toasts.success("All game files verified.");
 		}, err -> {
-			window.taskBar().finish();
+			progress.finish();
+			if (err instanceof dev.vantage.common.util.CancelledException) {
+				Toasts.info("Repair cancelled.");
+				return;
+			}
 			Overlay.message("Repair failed", Ui.message(err));
 		});
 	}

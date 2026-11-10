@@ -217,11 +217,11 @@ public final class MainWindow {
 		game.preparing();
 		game.clear();
 		game.append("[Vantage] Preparing " + instance.name + " (Minecraft " + instance.minecraftVersion + ")");
-		ProgressListener progress = taskBar.begin("Preparing " + instance.name);
+		var progress = taskBar.begin("Preparing " + instance.name, true);
 		LauncherSettings settings = context.settings.settings();
 		Ui.async(() -> context.launchService.launch(instance, settings, context.accounts, quickPlay, progress, game::append),
 			session -> {
-				taskBar.finish();
+				progress.finish();
 				game.started(session);
 				instance.lastPlayed = System.currentTimeMillis();
 				context.settings.updateInstance(instance);
@@ -250,8 +250,13 @@ public final class MainWindow {
 				waiter.start();
 			},
 			error -> {
-				taskBar.finish();
+				progress.finish();
 				game.idle();
+				if (error instanceof dev.vantage.common.util.CancelledException) {
+					game.append("[Vantage] Launch cancelled.");
+					Toasts.info("Launch cancelled. Downloaded files are kept for next time.");
+					return;
+				}
 				game.append("[Vantage] Launch failed: " + Ui.message(error));
 				LOGGER.error("Launch failed", error);
 				Overlay.message("Could not start Minecraft", Ui.message(error));

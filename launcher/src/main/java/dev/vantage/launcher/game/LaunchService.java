@@ -74,12 +74,16 @@ public final class LaunchService {
 		String loader = instance.loaderVersion == null || instance.loaderVersion.isBlank()
 			? meta.latestLoader(instance.minecraftVersion) : instance.loaderVersion;
 		Path customJava = instance.javaPath == null || instance.javaPath.isBlank() ? null : Path.of(instance.javaPath);
+		progress.checkCancelled();
 		GameInstaller.PreparedGame game = installer.install(instance.minecraftVersion, loader, customJava, false,
 			settings.downloadThreads, progress);
 
 		Path gameDir = instance.resolveGameDirectory(paths.instances());
+		progress.checkCancelled();
 		prepareMods(instance, gameDir, progress);
 
+		// Last point at which cancelling is possible; after this the game process exists.
+		progress.checkCancelled();
 		progress.status("Starting Minecraft " + instance.minecraftVersion);
 		List<String> command = GameLauncher.buildCommand(game, instance, gameDir, account, clientId, paths.root(), quickPlay);
 		LOGGER.info("Launching: {}", GameLauncher.describe(command, account));

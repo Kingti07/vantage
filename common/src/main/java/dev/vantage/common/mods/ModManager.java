@@ -345,7 +345,8 @@ public final class ModManager {
 				boolean existed = Files.exists(target);
 				String algorithm = file.hashes() != null && file.hashes().sha512() != null ? "SHA-512" : "SHA-1";
 				String hash = file.hashes() == null ? null : "SHA-512".equals(algorithm) ? file.hashes().sha512() : file.hashes().sha1();
-				Http.download(URI.create(file.url()), target, algorithm, hash, bytes -> progress.progress(done.addAndGet(bytes) / (double) total));
+				Http.download(URI.create(file.url()), target, algorithm, hash, bytes -> progress.progress(done.addAndGet(bytes) / (double) total),
+					progress::isCancelled);
 				if (!existed) {
 					written.add(target);
 				}
@@ -357,6 +358,15 @@ public final class ModManager {
 					Files.deleteIfExists(path);
 				} catch (IOException cleanup) {
 					LOGGER.warn("Could not clean up {} after failed install", path, cleanup);
+				}
+			}
+			// Partial downloads must not stay in the mods folder.
+			for (InstallPlan.PlannedFile planned : plan.toInstall()) {
+				Path part = Http.partFile(modsDir.resolve(FileUtil.sanitizeFileName(planned.version().primaryFile().filename())));
+				try {
+					Files.deleteIfExists(part);
+				} catch (IOException cleanup) {
+					LOGGER.warn("Could not clean up {} after failed install", part, cleanup);
 				}
 			}
 			throw e;

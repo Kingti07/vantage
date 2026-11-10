@@ -249,3 +249,4 @@
 }
 .spinner .increment-arrow-button:hover, .spinner .decrement-arrow-button:hover { -fx-background-color: derive(-v-surface-3, 25%); }
 .spinner .increment-arrow, .spinner .decrement-arrow { -fx-background-color: -v-muted; }
+.task-bar .small-button { -fx-padding: 4 10 4 10; -fx-font-size: 12px; }

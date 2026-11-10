@@ -146,12 +146,12 @@ public final class ModsPage implements Page {
 	/** Resolves dependencies, shows the plan and installs on confirmation. */
 	public void install(String projectId, String versionId, String title, Runnable afterInstall) {
 		ModManager manager = manager();
-		ProgressListener progress = window.taskBar().begin("Resolving " + title);
+		var progress = window.taskBar().begin("Resolving " + title);
 		Ui.async(() -> manager.plan(projectId, versionId), plan -> {
-			window.taskBar().finish();
+			progress.finish();
 			showPlan(manager, plan, afterInstall);
 		}, err -> {
-			window.taskBar().finish();
+			progress.finish();
 			Overlay.message("Cannot install " + title, Ui.message(err));
 		});
 		progress.status("Resolving dependencies for " + title);
@@ -216,16 +216,16 @@ public final class ModsPage implements Page {
 		cancel.setOnAction(e -> close.run());
 		install.setOnAction(e -> {
 			close.run();
-			ProgressListener progress = window.taskBar().begin("Installing " + title);
+			var progress = window.taskBar().begin("Installing " + title, true);
 			Ui.async(() -> manager.execute(plan, progress), paths -> {
-				window.taskBar().finish();
+				progress.finish();
 				Toasts.success("Installed " + title + (plan.toInstall().size() > 1 ? " and " + (plan.toInstall().size() - 1) + " dependenc"
 					+ (plan.toInstall().size() == 2 ? "y" : "ies") : "") + ".");
 				if (afterInstall != null) {
 					afterInstall.run();
 				}
 			}, err -> {
-				window.taskBar().finish();
+				progress.finish();
 				Overlay.message("Installation failed", Ui.message(err) + "\n\nNo files were left behind.");
 			});
 		});

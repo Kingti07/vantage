@@ -20,8 +20,18 @@ public final class HashUtil {
 		return hash(file, "SHA-512");
 	}
 
+	public static String sha256(Path file) throws IOException {
+		return hash(file, "SHA-256");
+	}
+
 	public static String hash(Path file, String algorithm) throws IOException {
 		MessageDigest digest = digest(algorithm);
+		update(digest, file);
+		return HexFormat.of().formatHex(digest.digest());
+	}
+
+	/** Feeds the whole content of {@code file} into {@code digest}. */
+	public static void update(MessageDigest digest, Path file) throws IOException {
 		try (InputStream in = Files.newInputStream(file)) {
 			byte[] buffer = new byte[64 * 1024];
 			int read;
@@ -29,7 +39,6 @@ public final class HashUtil {
 				digest.update(buffer, 0, read);
 			}
 		}
-		return HexFormat.of().formatHex(digest.digest());
 	}
 
 	public static MessageDigest digest(String algorithm) {

@@ -105,6 +105,7 @@ public final class GameInstaller {
 		classpath.add(clientJar);
 		queue.run(listener, "Downloading game libraries", 0.03, 0.25, threads);
 
+		listener.checkCancelled();
 		// Natives: modern LWJGL extracts itself from the classpath into this directory; legacy versions need extraction.
 		Path nativesDir = paths.versions().resolve(merged.id()).resolve("natives");
 		Files.createDirectories(nativesDir);
@@ -112,6 +113,7 @@ public final class GameInstaller {
 			extractNatives(jar, nativesDir);
 		}
 
+		listener.checkCancelled();
 		// Assets
 		var indexRef = vanilla.assetIndex();
 		Path indexFile = paths.assets().resolve("indexes").resolve(indexRef.id() + ".json");
@@ -134,6 +136,7 @@ public final class GameInstaller {
 			LOGGER.warn("Asset index {} uses legacy virtual assets, which this launcher does not lay out", indexRef.id());
 		}
 
+		listener.checkCancelled();
 		// Logging configuration
 		Path loggingConfig = null;
 		String loggingArgument = null;
@@ -146,6 +149,7 @@ public final class GameInstaller {
 			loggingArgument = logging.argument();
 		}
 
+		listener.checkCancelled();
 		// Java runtime
 		Path java;
 		if (customJava != null) {

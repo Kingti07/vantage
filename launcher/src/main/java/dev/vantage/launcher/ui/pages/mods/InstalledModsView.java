@@ -249,7 +249,7 @@ public final class InstalledModsView {
 		ModManager manager = page.manager();
 		var progress = page.window().taskBar().begin("Checking for mod updates");
 		Ui.async(() -> manager.findUpdates(mods), found -> {
-			page.window().taskBar().finish();
+			progress.finish();
 			updates = new HashMap<>(found);
 			boolean any = !updates.isEmpty();
 			updateAll.setVisible(any);
@@ -257,7 +257,7 @@ public final class InstalledModsView {
 			Toasts.info(any ? updates.size() + " update(s) available." : "All mods are up to date.");
 			render();
 		}, err -> {
-			page.window().taskBar().finish();
+			progress.finish();
 			Toasts.error("Update check failed: " + Ui.message(err));
 		});
 		progress.progress(-1);
@@ -266,7 +266,7 @@ public final class InstalledModsView {
 	private void updateAll() {
 		ModManager manager = page.manager();
 		Map<InstalledMod, Version> todo = new HashMap<>(updates);
-		var progress = page.window().taskBar().begin("Updating " + todo.size() + " mod(s)");
+		var progress = page.window().taskBar().begin("Updating " + todo.size() + " mod(s)", true);
 		Ui.async(() -> {
 			int done = 0;
 			StringBuilder failures = new StringBuilder();
@@ -283,7 +283,7 @@ public final class InstalledModsView {
 			}
 			return done + (failures.isEmpty() ? "" : "\n" + failures);
 		}, result -> {
-			page.window().taskBar().finish();
+			progress.finish();
 			String[] parts = result.split("\n", 2);
 			Toasts.success("Updated " + parts[0] + " mod(s).");
 			if (parts.length > 1 && !parts[1].isBlank()) {
@@ -291,7 +291,7 @@ public final class InstalledModsView {
 			}
 			onShow();
 		}, err -> {
-			page.window().taskBar().finish();
+			progress.finish();
 			Overlay.message("Update failed", Ui.message(err));
 		});
 	}

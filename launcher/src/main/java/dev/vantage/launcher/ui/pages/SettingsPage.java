@@ -229,12 +229,12 @@ public final class SettingsPage implements Page {
 			}
 			var r = release.get();
 			Overlay.confirm("Vantage " + r.version() + " is available", r.notes().isBlank() ? r.name() : r.notes(), "Download update", false, () -> {
-				var progress = window.taskBar().begin("Downloading update");
+				var progress = window.taskBar().begin("Downloading update", true);
 				Ui.async(() -> window.context().updater.download(r, platform, progress), path -> {
-					window.taskBar().finish();
+					progress.finish();
 					Overlay.message("Update ready", "Vantage " + r.version() + " has been downloaded. It starts automatically the next time you open the launcher.");
 				}, err -> {
-					window.taskBar().finish();
+					progress.finish();
 					Toasts.error("Update download failed: " + Ui.message(err));
 				});
 			});

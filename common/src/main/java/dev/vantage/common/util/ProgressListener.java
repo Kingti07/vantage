@@ -20,4 +20,26 @@ public interface ProgressListener {
 
 	/** Overall progress in [0, 1], or a negative value for indeterminate. */
 	void progress(double fraction);
+
+	/**
+	 * Byte-level detail of the current transfer, used to show size, speed and remaining time.
+	 *
+	 * @param doneBytes      bytes transferred in the current step
+	 * @param totalBytes     bytes expected in the current step, or a value &lt;= 0 if unknown
+	 * @param bytesPerSecond smoothed transfer rate
+	 */
+	default void transfer(long doneBytes, long totalBytes, double bytesPerSecond) {
+	}
+
+	/** True once the user asked to cancel. Long operations stop with a {@link CancelledException}. */
+	default boolean isCancelled() {
+		return false;
+	}
+
+	/** Throws {@link CancelledException} if the user asked to cancel. */
+	default void checkCancelled() throws CancelledException {
+		if (isCancelled()) {
+			throw new CancelledException("Cancelled");
+		}
+	}
 }
