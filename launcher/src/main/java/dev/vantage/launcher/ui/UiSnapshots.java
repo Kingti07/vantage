@@ -22,7 +22,7 @@ import java.util.List;
 final class UiSnapshots {
 	private static final Logger LOGGER = LoggerFactory.getLogger(UiSnapshots.class);
 	private static final List<String> PAGES = List.of("home", "installations", "installation-editor", "mods", "mods-browse",
-		"mods-performance", "accounts", "settings", "console");
+		"mods-performance", "mods-resourcepacks", "mods-shaders", "modpacks", "accounts", "settings", "console");
 
 	private UiSnapshots() {
 	}
@@ -50,10 +50,12 @@ final class UiSnapshots {
 		switch (page) {
 			case "mods-browse" -> window.<dev.vantage.launcher.ui.pages.ModsPage>page("mods").showBrowse();
 			case "mods-performance" -> window.<dev.vantage.launcher.ui.pages.ModsPage>page("mods").showPerformance();
+			case "mods-resourcepacks" -> window.<dev.vantage.launcher.ui.pages.ModsPage>page("mods").showBrowse("Resource packs");
+			case "mods-shaders" -> window.<dev.vantage.launcher.ui.pages.ModsPage>page("mods").showBrowse("Shaders");
 			case "installation-editor" -> window.<dev.vantage.launcher.ui.pages.InstallationsPage>page("installations").createNew();
 			default -> window.navigate(page);
 		}
-		PauseTransition wait = new PauseTransition(Duration.seconds(page.startsWith("mods") || page.endsWith("editor") ? 5 : 1.5));
+		PauseTransition wait = new PauseTransition(Duration.seconds(page.startsWith("mods") || page.endsWith("editor") || "modpacks".equals(page) ? 5 : 1.5));
 		wait.setOnFinished(e -> {
 			save(window, folder.resolve(String.format("launcher-%02d-%s.png", index, page)));
 			if (page.endsWith("editor")) {

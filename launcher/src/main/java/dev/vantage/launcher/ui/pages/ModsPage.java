@@ -106,6 +106,12 @@ public final class ModsPage implements Page {
 		select("browse");
 	}
 
+	/** Opens the browser for "Mods", "Resource packs" or "Shaders". */
+	public void showBrowse(String type) {
+		select("browse");
+		browse.selectType(type);
+	}
+
 	public void showPerformance() {
 		select("performance");
 	}
