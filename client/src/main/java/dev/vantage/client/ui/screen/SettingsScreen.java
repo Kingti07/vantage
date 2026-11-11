@@ -46,7 +46,7 @@ public final class SettingsScreen extends VScreen {
 		tiles.add(new Tile("HUD", "Enable elements and open the HUD editor.", () -> minecraft.setScreen(new ModulesScreen(this, Category.HUD))));
 		tiles.add(new Tile("Camera", "Zoom, freelook, perspective, FOV, toggle sprint.", () -> minecraft.setScreen(new ModulesScreen(this, Category.CAMERA))));
 		tiles.add(new Tile("Visual", "Fullbright, sky, weather, time, motion blur…", () -> minecraft.setScreen(new ModulesScreen(this, Category.VISUAL))));
-		tiles.add(new Tile("Keybinds", "Vantage keybinds with conflict detection.", () -> minecraft.setScreen(new KeybindsScreen(this))));
+		tiles.add(new Tile("Keybinds", "Visual keyboard: click a key and choose what it does.", () -> minecraft.setScreen(new KeyboardScreen(this))));
 		tiles.add(new Tile("Minecraft controls", "Vanilla key bindings.", () -> minecraft.setScreen(new KeyBindsScreen(this, minecraft.options))));
 		tiles.add(new Tile("Mods", "Browse Modrinth and manage installed mods.", () -> minecraft.setScreen(new ModBrowserScreen(this))));
 		tiles.add(new Tile("Audio", "Volume and sound devices.", () -> minecraft.setScreen(new SoundOptionsScreen(this, minecraft.options))));

@@ -43,6 +43,7 @@ public final class KeybindsScreen extends VScreen {
 			VantageClient.get().keybinds().all().forEach(Keybind::reset);
 			fill();
 		}));
+		add(new Button(146, height - 28, 110, 18, () -> "Keyboard view", Button.Style.GHOST, () -> minecraft.setScreen(new KeyboardScreen(this))));
 		add(new Button(width - 120, height - 28, 100, 18, () -> "Done", Button.Style.SECONDARY, this::onClose));
 		fill();
 	}

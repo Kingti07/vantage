@@ -66,7 +66,7 @@ public final class ModulesScreen extends VScreen {
 		y += 8;
 		sidebar.add(new Button(0, y, bw, 18, () -> "HUD Editor", Button.Style.GHOST, () -> minecraft.setScreen(new HudEditorScreen(this))));
 		y += 21;
-		sidebar.add(new Button(0, y, bw, 18, () -> "Keybinds", Button.Style.GHOST, () -> minecraft.setScreen(new KeybindsScreen(this))));
+		sidebar.add(new Button(0, y, bw, 18, () -> "Keybinds", Button.Style.GHOST, () -> minecraft.setScreen(new KeyboardScreen(this))));
 		y += 21;
 		sidebar.add(new Button(0, y, bw, 18, () -> "Modrinth", Button.Style.GHOST, () -> minecraft.setScreen(new ModBrowserScreen(this))));
 		y += 21;

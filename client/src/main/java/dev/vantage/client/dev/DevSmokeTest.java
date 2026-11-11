@@ -15,6 +15,7 @@ import dev.vantage.client.ui.screen.CosmeticsScreen;
 import dev.vantage.client.ui.screen.HudEditorScreen;
 import dev.vantage.client.ui.screen.InstalledModsScreen;
 import dev.vantage.client.ui.screen.KeybindsScreen;
+import dev.vantage.client.ui.screen.KeyboardScreen;
 import dev.vantage.client.ui.screen.MainMenuScreen;
 import dev.vantage.client.ui.screen.ModBrowserScreen;
 import dev.vantage.client.ui.screen.ModulesScreen;
@@ -78,6 +79,7 @@ public final class DevSmokeTest {
 		screen("settings", () -> new SettingsScreen(null), 30);
 		screen("cosmetics", () -> new CosmeticsScreen(null), 30);
 		screen("keybinds", () -> new KeybindsScreen(null), 30);
+		screen("keyboard", () -> new KeyboardScreen(null), 30);
 		screen("hud-editor-menu", () -> new HudEditorScreen(null), 30);
 		screen("modrinth", () -> new ModBrowserScreen(null), 160);
 		screen("installed-mods", () -> new InstalledModsScreen(null), 80);
