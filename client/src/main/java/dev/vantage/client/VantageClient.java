@@ -2,6 +2,8 @@ package dev.vantage.client;
 
 import dev.vantage.client.combat.CombatTracker;
 import dev.vantage.client.config.ConfigManager;
+import dev.vantage.client.cosmetics.CosmeticsLayer;
+import dev.vantage.client.cosmetics.PlayerCosmeticsModule;
 import dev.vantage.client.hud.HudRenderer;
 import dev.vantage.client.keybind.KeybindManager;
 import dev.vantage.client.modrinth.ModService;
@@ -30,11 +32,13 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityFeatureRendererRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.entity.player.AvatarRenderer;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,6 +137,7 @@ public final class VantageClient implements ClientModInitializer {
 		modules.register(new WorldVisuals.CustomSky());
 		modules.register(new WorldVisuals.CustomWeather());
 		modules.register(new WorldVisuals.CustomTime());
+		modules.register(new PlayerCosmeticsModule());
 		// Performance
 		modules.register(new PerformanceModules.DynamicFps());
 		modules.register(new PerformanceModules.EntityCulling());
@@ -155,6 +160,11 @@ public final class VantageClient implements ClientModInitializer {
 		WorldRenderEvents.AFTER_ENTITIES.register(indicators::render);
 		HitboxesModule hitboxes = modules.get(HitboxesModule.class);
 		WorldRenderEvents.AFTER_ENTITIES.register(hitboxes::render);
+		LivingEntityFeatureRendererRegistrationCallback.EVENT.register((type, renderer, helper, context) -> {
+			if (renderer instanceof AvatarRenderer<?> avatar) {
+				helper.register(new CosmeticsLayer(avatar, context.getModelSet()));
+			}
+		});
 	}
 
 	private void registerEvents() {

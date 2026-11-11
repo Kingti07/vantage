@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * Client-side cosmetics and customisation: theme colours, menu backgrounds, fonts, GUI scale, HUD style
- * presets and configuration profiles.
+ * presets and configuration profiles. Capes, hats and pets have their own {@link PlayerCosmeticsScreen}.
  */
 public final class CosmeticsScreen extends VScreen {
 	private static final int[][] THEMES = {
@@ -113,6 +113,8 @@ public final class CosmeticsScreen extends VScreen {
 				break;
 			}
 		}
+		add(new Button(width - 200, 16, 180, 20, () -> "Capes, hats & pets", Button.Style.PRIMARY,
+			() -> minecraft.setScreen(new PlayerCosmeticsScreen(this))));
 		add(new Button(width - 120, height - 28, 100, 18, () -> "Done", Button.Style.SECONDARY, this::onClose));
 	}
 

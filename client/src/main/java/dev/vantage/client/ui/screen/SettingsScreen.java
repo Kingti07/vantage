@@ -53,6 +53,7 @@ public final class SettingsScreen extends VScreen {
 		tiles.add(new Tile("Launcher", "Instance folders and launcher information.", () -> minecraft.setScreen(new LauncherInfoScreen(this))));
 		tiles.add(new Tile("Account", "Current account and switching.", () -> minecraft.setScreen(new AccountsScreen(this))));
 		tiles.add(new Tile("Profiles & cosmetics", "Themes, backgrounds, fonts and profiles.", () -> minecraft.setScreen(new CosmeticsScreen(this))));
+		tiles.add(new Tile("Capes, hats & pets", "Cosmetics for your own player.", () -> minecraft.setScreen(new PlayerCosmeticsScreen(this))));
 		tiles.add(new Tile("All Minecraft options", "The full vanilla options menu.", () -> minecraft.setScreen(new OptionsScreen(this, minecraft.options))));
 
 		int columns = Math.max(2, Math.min(4, (width - 40) / 170));
