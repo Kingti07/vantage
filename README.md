@@ -206,6 +206,8 @@ Nothing needs to be edited by hand; every setting has a UI and saves automatical
 Vantage contains no cheats: no reach/velocity/aim changes, no automation, no packet manipulation, no anti-cheat
 bypasses. All modules are visual, informational or quality-of-life and work only with information the vanilla
 client already has. Some servers restrict certain client-side features (for example freelook); respect their rules.
+The Hitboxes module, like vanilla F3+B, shows nothing on servers that turn on "reduced debug info". Capes, hats and
+pets are drawn only on your own screen.
 
 ## Licenses
 

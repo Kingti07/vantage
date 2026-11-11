@@ -34,6 +34,18 @@ on a Windows 11 PC with an RTX 4060 Ti, 1280x720:
   V-Sync.
 - Developer tools: `launchBenchmark` and `launchSmoke -PsmokeMods=...` for compatibility tests with other mods.
 
+### In-game client
+- Fixed: the Vantage HUD disappeared completely while vanilla hitboxes (F3+B) or another debug entry was set to
+  "always on". Since Minecraft 1.21.9 that counts as an open debug screen, and "Hide HUD in F3" reacted to it. Now
+  only the real F3 screen hides the HUD. The in-game smoke test checks this.
+- New PvP module **Hitboxes**: draws entity hitboxes and gives the ones you can hit right now another colour
+  (default green). "Can hit" uses the same reach rule as the server, including creative mode and weapons with their
+  own reach. Optional: only when aimed at, only with F3+B, eye line and look direction, players/mobs/other entities.
+  It replaces the vanilla F3+B boxes while enabled and shows nothing on servers with "reduced debug info".
+- New **Capes, hats & pets** (Settings or Cosmetics): 7 capes, 5 hats (top hat, crown, halo, party hat, beanie) and
+  shoulder pets (5 parrots, bee), with a turning preview. Only you see them; nothing is sent to a server. The cape
+  and hat art is drawn by Vantage itself.
+
 ### Release process
 - `v1.2.3` tags become normal releases (found by every launcher, also 0.1.0); `v1.2.3-beta.1` become pre-releases.
 - `LAUNCH.md`: checklist for the day sign-in is approved.

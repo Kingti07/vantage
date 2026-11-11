@@ -109,5 +109,14 @@ das, was nur ein Mensch am echten PC prüfen kann. Hake jeden Punkt ab und notie
 | 11.7 | Im Spiel: Vantage-Menü → Performance → FPS Boost Preset → „Apply“ | Videoeinstellungen: Grafik „Schnell“, keine Wolken, kein FPS-Limit, kein V-Sync. |
 | 11.8 | Settings → Performance → „Low-latency memory management“ an, „Play“ | Spiel startet normal. In der Console steht beim Start `-XX:+UseZGC` im Startbefehl (Launcher-Log). |
 
+## 12. Im Spiel (ab 0.2.0)
+| # | Was du tust | Erwartetes Ergebnis |
+|---|---|---|
+| 12.1 | HUD-Elemente einschalten (z. B. FPS), dann F3+B drücken | Die Hitboxen erscheinen und das Vantage-HUD bleibt sichtbar. Nur das echte F3-Menü blendet es aus. |
+| 12.2 | Vantage-Menü → PvP → „Hitboxes“ an, auf einem Server zu einem Spieler oder Tier gehen | Weiße Boxen; in Schlagreichweite wird die Box grün. Mit „Hittable means: In reach and aimed at“ nur, wenn du auch darauf zielst. |
+| 12.3 | Settings → „Capes, hats & pets“ | Vorschau dreht sich. Umhang, Hut und Tier wählen: Die Vorschau und dein Spieler (F5) zeigen sie. |
+| 12.4 | Einen Helm aufsetzen | Der Hut verschwindet (außer „Hide hat under helmet“ ist aus). |
+| 12.5 | Einen Freund fragen, ob er deinen Umhang sieht | Nein: Die Cosmetics sieht nur, wer sie eingestellt hat. |
+
 ## Nicht auf Windows getestet (bitte auf macOS und Linux wiederholen)
 Punkte 1, 2.4 (Schlüssel im macOS-Schlüsselbund bzw. Linux-Schlüsselbund statt `token-key.dpapi`), 3 und 4.

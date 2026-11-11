@@ -95,6 +95,7 @@ damage indicators, hit particles). Those are marked "Done (untested live)".
 | Crosshair customization | Done | 6 styles, size, gap, thickness, outline, target colour, invert blending, cooldown bar |
 | Custom hit color | Done | Repaints the entity hurt overlay |
 | Damage indicators | Done (untested live) | Floating numbers (optional healing), through walls |
+| Hitboxes | Done | Own coloured boxes; hittable (server reach rule) in a second colour; replaces F3+B; off with reduced debug info |
 
 ### Movement & visual
 | Feature | Status | Notes |
@@ -163,4 +164,5 @@ damage indicators, hit particles). Those are marked "Done (untested live)".
 | Worlds: create/load/delete; servers: add/edit/remove/icons/ping/join | Done (vanilla screens) |
 | Settings hub (general, video, performance, PvP, HUD, keybinds, mods, audio, launcher, account) | Done |
 | Themes, menu backgrounds, UI colours, GUI scale, fonts, HUD style presets, profiles | Done (fonts limited to Minecraft + Unifont) |
+| Capes (7), hats (5) and shoulder pets (5 parrots, bee) for your own player, with a turning preview | Done (only visible to you) |
 | Consistent dark design across launcher and game | Done |
