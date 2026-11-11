@@ -6,6 +6,7 @@
   "client": [
     "AbstractClientPlayerMixin",
     "CameraMixin",
+    "EntityHitboxDebugRendererMixin",
     "EntityMixin",
     "EntityRenderDispatcherMixin",
     "EnvironmentAttributeProbeMixin",

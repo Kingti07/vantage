@@ -20,6 +20,7 @@ import dev.vantage.client.module.pvp.BlockOverlayModule;
 import dev.vantage.client.module.pvp.CrosshairModule;
 import dev.vantage.client.module.pvp.DamageIndicatorsModule;
 import dev.vantage.client.module.pvp.HitColorModule;
+import dev.vantage.client.module.pvp.HitboxesModule;
 import dev.vantage.client.module.pvp.PvpModules;
 import dev.vantage.client.module.visual.WorldVisuals;
 import dev.vantage.client.render.Text;
@@ -114,6 +115,7 @@ public final class VantageClient implements ClientModInitializer {
 		modules.register(new DamageIndicatorsModule());
 		modules.register(new PvpModules.HitParticles());
 		modules.register(new BlockOverlayModule());
+		modules.register(new HitboxesModule());
 		modules.register(new PvpModules.ItemAnimations());
 		// Camera & movement
 		modules.register(new ZoomModule());
@@ -151,6 +153,8 @@ public final class VantageClient implements ClientModInitializer {
 		WorldRenderEvents.BEFORE_BLOCK_OUTLINE.register(blockOverlay::render);
 		DamageIndicatorsModule indicators = modules.get(DamageIndicatorsModule.class);
 		WorldRenderEvents.AFTER_ENTITIES.register(indicators::render);
+		HitboxesModule hitboxes = modules.get(HitboxesModule.class);
+		WorldRenderEvents.AFTER_ENTITIES.register(hitboxes::render);
 	}
 
 	private void registerEvents() {
