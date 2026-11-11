@@ -5,10 +5,12 @@ import dev.vantage.client.cosmetics.PlayerCosmeticsModule;
 import dev.vantage.client.hud.HudRenderer;
 import dev.vantage.client.hud.HudModule;
 import dev.vantage.client.module.Module;
+import dev.vantage.client.module.hud.ExtraHuds;
 import dev.vantage.client.module.hud.InfoHuds;
 import dev.vantage.client.module.pvp.BlockOverlayModule;
 import dev.vantage.client.module.pvp.CrosshairModule;
 import dev.vantage.client.module.pvp.HitboxesModule;
+import dev.vantage.client.module.utility.UtilityModules;
 import dev.vantage.client.module.visual.WorldVisuals;
 import dev.vantage.client.ui.screen.AccountsScreen;
 import dev.vantage.client.ui.screen.CosmeticsScreen;
@@ -21,6 +23,7 @@ import dev.vantage.client.ui.screen.ModBrowserScreen;
 import dev.vantage.client.ui.screen.ModulesScreen;
 import dev.vantage.client.ui.screen.PerformancePackScreen;
 import dev.vantage.client.ui.screen.PlayerCosmeticsScreen;
+import dev.vantage.client.ui.screen.PracticeScreen;
 import dev.vantage.client.ui.screen.SettingsScreen;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -133,6 +136,31 @@ public final class DevSmokeTest {
 			VantageClient.get().modules().get(HitboxesModule.class).setEnabled(false);
 			mc.debugEntries.setStatus(DebugScreenEntries.ENTITY_HITBOXES, DebugScreenEntryStatus.NEVER);
 		}, () -> true, 5));
+		steps.add(new Step("chat-and-huds", () -> {
+			var modules = VantageClient.get().modules();
+			enable(modules.get(ExtraHuds.SessionTime.class));
+			enable(modules.get(ExtraHuds.Server.class));
+			enable(modules.get(ExtraHuds.Deaths.class));
+			ExtraHuds.Totems totems = modules.get(ExtraHuds.Totems.class);
+			totems.hideWhenNone.set(false);
+			enable(totems);
+			UtilityModules.ChatTweaks tweaks = modules.get(UtilityModules.ChatTweaks.class);
+			for (int i = 0; i < 3; i++) {
+				mc.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("Vantage smoke test message"));
+			}
+			check("chat stacks a message repeated 3 times", tweaks.repeats() == 3);
+			var config = VantageClient.get().config();
+			String before = config.activeProfile();
+			try {
+				String imported = config.importProfile(config.exportActiveProfile());
+				check("a copied profile can be pasted as a new profile (" + imported + ")", config.profiles().contains(imported));
+				config.switchProfile(before);
+				config.deleteProfile(imported);
+			} catch (java.io.IOException e) {
+				check("profile copy and paste: " + e.getMessage(), false);
+			}
+		}, () -> true, 20));
+		screen("practice", () -> new PracticeScreen(null), 20);
 		steps.add(new Step("motion-blur", () -> {
 			enable(VantageClient.get().modules().get(WorldVisuals.MotionBlur.class));
 			if (mc.player != null) {

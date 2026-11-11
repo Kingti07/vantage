@@ -6,6 +6,7 @@ public enum Category {
 	CAMERA("Camera"),
 	VISUAL("Visual"),
 	PERFORMANCE("Performance"),
+	UTILITY("Utility"),
 	INTERFACE("Interface");
 
 	public final String label;

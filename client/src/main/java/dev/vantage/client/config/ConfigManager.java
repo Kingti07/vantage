@@ -45,6 +45,12 @@ public final class ConfigManager {
 	private final ModuleManager modules;
 	private final KeybindManager keybinds;
 	private String activeProfile = "default";
+	/** Server address (lower case, without the default port) -> profile used while playing there. */
+	private final java.util.Map<String, String> serverProfiles = new java.util.LinkedHashMap<>();
+	/** Personal bests of the practice tools, e.g. "cps" -> 11.4. */
+	private final java.util.Map<String, Double> records = new java.util.LinkedHashMap<>();
+	/** The profile that was active before a server profile took over; restored when leaving the server. */
+	private String profileBeforeServer;
 
 	public ConfigManager(ModuleManager modules, KeybindManager keybinds) {
 		this.modules = modules;
@@ -75,6 +81,12 @@ public final class ConfigManager {
 			if (Files.isRegularFile(client)) {
 				JsonObject json = Json.readObject(client);
 				activeProfile = sanitize(Json.string(json, "activeProfile", "default"));
+				if (json.has("serverProfiles") && json.get("serverProfiles").isJsonObject()) {
+					json.getAsJsonObject("serverProfiles").entrySet().forEach(e -> serverProfiles.put(e.getKey(), sanitize(e.getValue().getAsString())));
+				}
+				if (json.has("records") && json.get("records").isJsonObject()) {
+					json.getAsJsonObject("records").entrySet().forEach(e -> records.put(e.getKey(), e.getValue().getAsDouble()));
+				}
 			}
 		} catch (IOException e) {
 			LOGGER.warn("Could not read client.json: {}", e.getMessage());
@@ -102,7 +114,13 @@ public final class ConfigManager {
 		try {
 			write(profiles.resolve(activeProfile + ".json"), profile);
 			JsonObject client = new JsonObject();
-			client.addProperty("activeProfile", activeProfile);
+			client.addProperty("activeProfile", profileBeforeServer != null ? profileBeforeServer : activeProfile);
+			JsonObject servers = new JsonObject();
+			serverProfiles.forEach(servers::addProperty);
+			client.add("serverProfiles", servers);
+			JsonObject best = new JsonObject();
+			records.forEach(best::addProperty);
+			client.add("records", best);
 			write(root.resolve("client.json"), client);
 		} catch (IOException e) {
 			LOGGER.error("Could not save Vantage configuration", e);
@@ -172,6 +190,104 @@ public final class ConfigManager {
 			module.load(null);
 		}
 		keybinds.load(null);
+		markDirty();
+	}
+
+	// ------------------------------------------------------------------------------------------------ server profiles
+
+	/** Normalises a server address: lower case, default port removed. */
+	public static String serverKey(String address) {
+		String key = address == null ? "" : address.trim().toLowerCase(Locale.ROOT);
+		return key.endsWith(":25565") ? key.substring(0, key.length() - 6) : key;
+	}
+
+	public java.util.Map<String, String> serverProfiles() {
+		return java.util.Collections.unmodifiableMap(serverProfiles);
+	}
+
+	public String profileForServer(String address) {
+		return serverProfiles.get(serverKey(address));
+	}
+
+	public void linkServer(String address, String profile) {
+		serverProfiles.put(serverKey(address), sanitize(profile));
+		markDirty();
+	}
+
+	public void unlinkServer(String address) {
+		if (serverProfiles.remove(serverKey(address)) != null) {
+			markDirty();
+		}
+	}
+
+	/** Switches to the profile linked to {@code address}, if any. Returns the profile that is now active, or null. */
+	public String enterServer(String address) {
+		String profile = profileForServer(address);
+		if (profile == null || !profiles().contains(profile) || profile.equals(activeProfile)) {
+			return null;
+		}
+		String previous = activeProfile;
+		switchProfile(profile);
+		profileBeforeServer = previous;
+		return profile;
+	}
+
+	/** Goes back to the profile used before {@link #enterServer}. */
+	public void leaveServer() {
+		if (profileBeforeServer != null) {
+			String previous = profileBeforeServer;
+			profileBeforeServer = null;
+			switchProfile(previous);
+		}
+	}
+
+	// ------------------------------------------------------------------------------------------------ sharing
+
+	/** The active profile as text that can be pasted into another Vantage client. */
+	public String exportActiveProfile() {
+		save();
+		JsonObject wrapper = new JsonObject();
+		wrapper.addProperty("vantageProfile", 1);
+		wrapper.addProperty("name", activeProfile);
+		try {
+			wrapper.add("data", Json.readObject(profiles.resolve(activeProfile + ".json")));
+		} catch (IOException e) {
+			wrapper.add("data", new JsonObject());
+		}
+		return new com.google.gson.Gson().toJson(wrapper);
+	}
+
+	/** Creates a new profile from exported text and activates it. Returns its name. */
+	public String importProfile(String text) throws IOException {
+		JsonObject wrapper;
+		try {
+			wrapper = parse(text);
+		} catch (RuntimeException e) {
+			throw new IOException("The clipboard does not contain a Vantage profile.");
+		}
+		if (!wrapper.has("vantageProfile") || !wrapper.has("data") || !wrapper.get("data").isJsonObject()) {
+			throw new IOException("The clipboard does not contain a Vantage profile.");
+		}
+		String base = sanitize(Json.string(wrapper, "name", "imported"));
+		String name = base;
+		List<String> existing = profiles();
+		for (int i = 2; existing.contains(name); i++) {
+			name = sanitize(base + "-" + i);
+		}
+		save();
+		write(profiles.resolve(name + ".json"), wrapper.getAsJsonObject("data"));
+		switchProfile(name);
+		return name;
+	}
+
+	// ------------------------------------------------------------------------------------------------ records
+
+	public double record(String key) {
+		return records.getOrDefault(key, 0.0);
+	}
+
+	public void setRecord(String key, double value) {
+		records.put(key, value);
 		markDirty();
 	}
 

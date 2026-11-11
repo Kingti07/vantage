@@ -7,6 +7,7 @@
     "AbstractClientPlayerMixin",
     "AvatarRendererMixin",
     "CameraMixin",
+    "ChatComponentMixin",
     "EntityHitboxDebugRendererMixin",
     "EntityMixin",
     "EntityRenderDispatcherMixin",

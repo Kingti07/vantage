@@ -50,6 +50,15 @@ public final class CombatTracker {
 	private boolean sprintResetSinceHit;
 	private Vec3 lastPosition;
 	private double speed;
+	private int deaths;
+	private boolean wasDead;
+	private long sessionStart = System.currentTimeMillis();
+	/** Where and in which dimension you died last, or null. */
+	private DeathPoint lastDeath;
+
+	/** A death position, recorded on the client from your own position. */
+	public record DeathPoint(Vec3 position, String dimension, long time) {
+	}
 
 	public void onClick(int button) {
 		long now = System.currentTimeMillis();
@@ -113,6 +122,14 @@ public final class CombatTracker {
 		}
 		wasSprinting = sprinting;
 
+		// Deaths: the moment your own health reaches zero.
+		boolean dead = player.isDeadOrDying();
+		if (dead && !wasDead) {
+			deaths++;
+			lastDeath = new DeathPoint(player.position(), player.level().dimension().identifier().getPath(), now);
+		}
+		wasDead = dead;
+
 		// Own damage breaks the combo.
 		if (player.hurtTime > lastOwnHurtTime && player.hurtTime > 0) {
 			combo = 0;
@@ -174,6 +191,23 @@ public final class CombatTracker {
 		wtaps = 0;
 		lastPosition = null;
 		speed = 0;
+		deaths = 0;
+		wasDead = false;
+		lastDeath = null;
+		sessionStart = System.currentTimeMillis();
+	}
+
+	public int deaths() {
+		return deaths;
+	}
+
+	public DeathPoint lastDeath() {
+		return lastDeath;
+	}
+
+	/** Milliseconds since you joined the current world or server. */
+	public long sessionMillis() {
+		return System.currentTimeMillis() - sessionStart;
 	}
 
 	public LivingEntity target() {

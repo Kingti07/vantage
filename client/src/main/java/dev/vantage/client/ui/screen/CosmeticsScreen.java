@@ -16,6 +16,7 @@ import dev.vantage.client.ui.widget.TextField;
 import dev.vantage.client.util.Colors;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.util.Util;
 
 import java.io.IOException;
@@ -91,6 +92,35 @@ public final class CosmeticsScreen extends VScreen {
 		add(new Button(right + columnWidth - 80, ry, 80, 18, () -> "Create", Button.Style.PRIMARY, this::createProfile));
 		ry += 24;
 		ConfigManager config = VantageClient.get().config();
+		int third = (columnWidth - 8) / 3;
+		add(new Button(right, ry, third, 18, () -> "Copy profile", Button.Style.GHOST, () -> {
+			minecraft.keyboardHandler.setClipboard(config.exportActiveProfile());
+			toast("Copied profile " + config.activeProfile() + ". Paste it into another Vantage client.");
+		}));
+		add(new Button(right + third + 4, ry, third, 18, () -> "Paste profile", Button.Style.GHOST, () -> {
+			try {
+				String name = config.importProfile(minecraft.keyboardHandler.getClipboard());
+				toast("Imported and switched to profile " + name + ".");
+				rebuildWidgets();
+			} catch (IOException e) {
+				toast(e.getMessage());
+			}
+		}));
+		ServerData server = minecraft.getCurrentServer();
+		if (server != null) {
+			boolean linked = config.activeProfile().equals(config.profileForServer(server.ip));
+			add(new Button(right + 2 * (third + 4), ry, third, 18, () -> linked ? "Unlink server" : "Use on this server", Button.Style.GHOST, () -> {
+				if (linked) {
+					config.unlinkServer(server.ip);
+					toast("Profile " + config.activeProfile() + " is no longer linked to " + server.ip + ".");
+				} else {
+					config.linkServer(server.ip, config.activeProfile());
+					toast("Profile " + config.activeProfile() + " is now used automatically on " + server.ip + ".");
+				}
+				rebuildWidgets();
+			}));
+		}
+		ry += 24;
 		List<String> profiles = config.profiles();
 		for (String profile : profiles) {
 			boolean active = profile.equals(config.activeProfile());

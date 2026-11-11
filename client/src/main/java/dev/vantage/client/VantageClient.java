@@ -15,6 +15,7 @@ import dev.vantage.client.module.camera.PerspectiveModule;
 import dev.vantage.client.module.camera.ToggleSprintModule;
 import dev.vantage.client.module.camera.ZoomModule;
 import dev.vantage.client.module.hud.CombatHuds;
+import dev.vantage.client.module.hud.ExtraHuds;
 import dev.vantage.client.module.hud.InfoHuds;
 import dev.vantage.client.module.hud.StatHuds;
 import dev.vantage.client.module.performance.PerformanceModules;
@@ -24,6 +25,7 @@ import dev.vantage.client.module.pvp.DamageIndicatorsModule;
 import dev.vantage.client.module.pvp.HitColorModule;
 import dev.vantage.client.module.pvp.HitboxesModule;
 import dev.vantage.client.module.pvp.PvpModules;
+import dev.vantage.client.module.utility.UtilityModules;
 import dev.vantage.client.module.visual.WorldVisuals;
 import dev.vantage.client.render.Text;
 import dev.vantage.client.ui.screen.HudEditorScreen;
@@ -113,6 +115,12 @@ public final class VantageClient implements ClientModInitializer {
 		modules.register(new CombatHuds.Target());
 		modules.register(new InfoHuds.Performance());
 		modules.register(new StatHuds.Clock());
+		modules.register(new ExtraHuds.SessionTime());
+		modules.register(new ExtraHuds.Server());
+		modules.register(new ExtraHuds.Deaths());
+		modules.register(new ExtraHuds.Totems());
+		modules.register(new ExtraHuds.Arrows());
+		modules.register(new ExtraHuds.Warnings());
 		// PvP
 		modules.register(new CrosshairModule());
 		modules.register(new HitColorModule());
@@ -142,6 +150,9 @@ public final class VantageClient implements ClientModInitializer {
 		modules.register(new PerformanceModules.DynamicFps());
 		modules.register(new PerformanceModules.EntityCulling());
 		modules.register(new PerformanceModules.Particles());
+		// Utility
+		modules.register(new UtilityModules.DeathCoordinates());
+		modules.register(new UtilityModules.ChatTweaks());
 	}
 
 	private void registerRendering() {
@@ -190,8 +201,21 @@ public final class VantageClient implements ClientModInitializer {
 			}
 		});
 		ClientLifecycleEvents.CLIENT_STOPPING.register(client -> config.save());
-		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> combat.resetSession());
-		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> combat.resetSession());
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+			combat.resetSession();
+			// Server profiles: switch to the profile linked to this server, if there is one.
+			if (client.getCurrentServer() != null) {
+				String profile = config.enterServer(client.getCurrentServer().ip);
+				if (profile != null) {
+					client.gui.getChat().addMessage(net.minecraft.network.chat.Component.literal("Vantage: using profile \"" + profile
+						+ "\" on this server.").withStyle(net.minecraft.ChatFormatting.GRAY));
+				}
+			}
+		});
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+			combat.resetSession();
+			config.leaveServer();
+		});
 	}
 
 	public KeybindManager keybinds() {
