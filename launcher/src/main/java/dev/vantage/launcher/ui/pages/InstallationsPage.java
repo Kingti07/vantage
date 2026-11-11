@@ -88,14 +88,22 @@ public final class InstallationsPage implements Page {
 			card.getStyleClass().add("card-selected");
 		}
 		card.setPrefWidth(300);
-		Node icon = Icons.of(Icons.LAYERS, 26);
-		icon.lookupAll(".icon").forEach(n -> n.setStyle("-fx-fill: -v-accent;"));
+		Node icon;
+		if (instance.iconUrl != null && !instance.iconUrl.isBlank()) {
+			javafx.scene.image.ImageView image = dev.vantage.launcher.ui.WebImages.rounded(26, 6);
+			dev.vantage.launcher.ui.WebImages.load(image, instance.iconUrl, 64);
+			icon = image;
+		} else {
+			icon = Icons.of(Icons.LAYERS, 26);
+			icon.lookupAll(".icon").forEach(n -> n.setStyle("-fx-fill: -v-accent;"));
+		}
 		Label name = Ui.label(instance.name, "h3");
 		HBox badges = new HBox(6, MainWindow.badge(instance.minecraftVersion, null),
 			MainWindow.badge("Fabric " + (instance.loaderVersion.isBlank() ? "latest" : instance.loaderVersion), null));
 		if (instance.vantageClient && instance.supportsVantageClient()) {
 			badges.getChildren().add(MainWindow.badge("Vantage", "accent"));
 		}
+		Label modpack = instance.isModpack() ? Ui.label("Modpack: " + ModpacksPage.describe(instance), "small", "muted") : null;
 		Label played = Ui.label(instance.lastPlayed > 0 ? "Last played " + Ui.relativeTime(Instant.ofEpochMilli(instance.lastPlayed)) : "Never played", "small", "muted");
 		Button play = Ui.button("Play", Icons.PLAY, "primary");
 		play.setOnAction(e -> window.play(instance, GameLauncher.QuickPlay.NONE));
@@ -105,7 +113,11 @@ public final class InstallationsPage implements Page {
 		folder.setOnAction(e -> Ui.openFolder(instance.resolveGameDirectory(window.context().paths.instances())));
 		HBox actions = new HBox(8, play, Ui.spacer(), folder, edit);
 		actions.setAlignment(Pos.CENTER_LEFT);
-		card.getChildren().addAll(Ui.row(10, icon, name), badges, played, actions);
+		card.getChildren().addAll(Ui.row(10, icon, name), badges);
+		if (modpack != null) {
+			card.getChildren().add(modpack);
+		}
+		card.getChildren().addAll(played, actions);
 		card.setOnMouseClicked(e -> {
 			if (e.getClickCount() == 1 && e.getTarget() == card) {
 				window.context().settings.select(instance);

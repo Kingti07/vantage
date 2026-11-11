@@ -55,12 +55,25 @@ public final class Instance {
 	public java.util.List<String> disabledForVulkan = new java.util.ArrayList<>();
 	public long lastPlayed = 0;
 	public long created = System.currentTimeMillis();
+	/** Modrinth project the installation was created from (empty when it is not a modpack). */
+	public String modpackProjectId = "";
+	/** Modrinth version id of the installed modpack version (empty for packs imported from a file). */
+	public String modpackVersionId = "";
+	/** Human-readable modpack name and version, e.g. "Fabulously Optimized 7.1.0". */
+	public String modpackName = "";
+	public String modpackVersion = "";
+	public String iconUrl = "";
 
 	public Path resolveGameDirectory(Path instancesRoot) {
 		if (gameDirectory != null && !gameDirectory.isBlank()) {
 			return Path.of(gameDirectory);
 		}
 		return instancesRoot.resolve(id);
+	}
+
+	/** True for installations created from a modpack. */
+	public boolean isModpack() {
+		return modpackName != null && !modpackName.isBlank();
 	}
 
 	public boolean supportsVantageClient() {
@@ -126,6 +139,14 @@ public final class Instance {
 			lastPlayed = 0;
 			changed = true;
 		}
+		if (modpackProjectId == null || modpackVersionId == null || modpackName == null || modpackVersion == null || iconUrl == null) {
+			modpackProjectId = modpackProjectId == null ? "" : modpackProjectId;
+			modpackVersionId = modpackVersionId == null ? "" : modpackVersionId;
+			modpackName = modpackName == null ? "" : modpackName;
+			modpackVersion = modpackVersion == null ? "" : modpackVersion;
+			iconUrl = iconUrl == null ? "" : iconUrl;
+			changed = true;
+		}
 		return changed;
 	}
 
@@ -151,6 +172,11 @@ public final class Instance {
 		copy.disabledForVulkan = new java.util.ArrayList<>(disabledForVulkan);
 		copy.lastPlayed = lastPlayed;
 		copy.created = created;
+		copy.modpackProjectId = modpackProjectId;
+		copy.modpackVersionId = modpackVersionId;
+		copy.modpackName = modpackName;
+		copy.modpackVersion = modpackVersion;
+		copy.iconUrl = iconUrl;
 		return copy;
 	}
 

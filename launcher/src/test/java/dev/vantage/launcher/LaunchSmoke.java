@@ -7,6 +7,7 @@ import dev.vantage.common.mods.ModManager;
 import dev.vantage.common.util.ProgressListener;
 import dev.vantage.launcher.game.GameLauncher;
 import dev.vantage.launcher.game.LaunchService;
+import dev.vantage.launcher.game.ModpackInstaller;
 import dev.vantage.launcher.settings.Instance;
 
 import java.io.PrintWriter;
@@ -24,7 +25,8 @@ import java.util.UUID;
  * The account is a local placeholder with an invalid token: enough for the game to start and run
  * singleplayer, but it cannot join servers. Real players always sign in with Microsoft.
  * <p>
- * Usage: {@code ./gradlew :launcher:launchSmoke -PsmokeDir=<empty folder>}
+ * Usage: {@code ./gradlew :launcher:launchSmoke -PsmokeDir=<empty folder>}; {@code -PsmokeModpack=<slug>} first installs
+ * that Modrinth modpack (newest Fabric version for the client's Minecraft version) into a new installation.
  */
 public final class LaunchSmoke {
 	private LaunchSmoke() {
@@ -36,6 +38,9 @@ public final class LaunchSmoke {
 		paths.createDirectories();
 		LauncherContext context = new LauncherContext(paths);
 		Instance instance = context.settings.selectedInstance();
+		if (args.length > 2 && !args[2].isBlank()) {
+			instance = installModpack(context, args[2].trim());
+		}
 		instance.extraJvmArgs = "-Dvantage.smokeTest=true -Dvantage.mixinAudit=true";
 		instance.memoryMb = 3072;
 		// Controlled runs: only the mods named on the command line, never the automatic performance mods.
@@ -67,7 +72,65 @@ public final class LaunchSmoke {
 			}
 		}
 
-		ProgressListener progress = new ProgressListener() {
+		ProgressListener progress = printer();
+		Path log = dir.resolve("game-output.log");
+		Instance launched = instance;
+		try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(log, StandardCharsets.UTF_8), true)) {
+			long start = System.currentTimeMillis();
+			LaunchService.Session session = context.launchService.launch(launched, context.settings.settings(), context.accounts,
+				GameLauncher.QuickPlay.NONE, progress, line -> {
+					writer.println(line);
+					if (line.contains("Vantage") || line.contains("ERROR") || line.contains("Exception")) {
+						System.out.println("[game] " + line);
+					}
+				});
+			System.out.println("[launcher] prepared and started in " + (System.currentTimeMillis() - start) / 1000 + " s");
+			int exit = session.process().waitFor();
+			System.out.println("[launcher] game exited with code " + exit);
+			Thread.sleep(500);
+			System.exit(exit);
+		}
+	}
+
+	/** Installs the newest Fabric version of a Modrinth modpack the way the Modpacks page does. */
+	private static Instance installModpack(LauncherContext context, String slug) throws Exception {
+		var versions = context.modrinth.projectVersions(slug, "fabric", VantageInfo.CLIENT_MINECRAFT_VERSION);
+		if (versions.isEmpty()) {
+			throw new IllegalStateException("No Fabric version of " + slug + " for " + VantageInfo.CLIENT_MINECRAFT_VERSION);
+		}
+		var version = versions.getFirst();
+		ModpackInstaller installer = new ModpackInstaller(context.paths);
+		dev.vantage.common.modpack.MrPack pack = dev.vantage.common.modpack.MrPack.open(installer.download(version, printer()));
+		Instance instance = context.settings.createInstance(pack.name(), pack.minecraftVersion());
+		instance.loaderVersion = ModpackInstaller.loaderVersion(pack, instance.vantageClient);
+		instance.modpackProjectId = version.projectId();
+		instance.modpackVersionId = version.id();
+		instance.modpackName = pack.name();
+		instance.modpackVersion = version.versionNumber();
+		context.settings.updateInstance(instance);
+		context.settings.select(instance);
+		Path gameDir = instance.resolveGameDirectory(context.paths.instances());
+		long start = System.currentTimeMillis();
+		int overrides = installer.installFiles(pack, gameDir, true, 8, printer());
+		long mods;
+		try (var files = Files.list(gameDir.resolve("mods"))) {
+			mods = files.filter(p -> p.toString().endsWith(".jar")).count();
+		}
+		System.out.println("[smoke] modpack " + pack.name() + " " + version.versionNumber() + ": " + mods + " mods, " + overrides
+			+ " override files, loader " + instance.loaderVersion + ", " + (System.currentTimeMillis() - start) / 1000 + " s");
+		// The pack's options.txt would show Minecraft's accessibility onboarding; the unattended run skips it.
+		Path options = gameDir.resolve("options.txt");
+		String text = Files.exists(options) ? Files.readString(options, StandardCharsets.UTF_8) : "";
+		if (!text.contains("onboardAccessibility:false")) {
+			String cleaned = text.replace("onboardAccessibility:true", "").stripTrailing();
+			Files.writeString(options, (cleaned.isEmpty() ? "" : cleaned + System.lineSeparator()) + "onboardAccessibility:false"
+				+ System.lineSeparator(), StandardCharsets.UTF_8);
+		}
+		return instance;
+	}
+
+	private static ProgressListener printer() {
+		return new ProgressListener() {
 			private String last = "";
 			private int lastPercent = -1;
 
@@ -88,21 +151,5 @@ public final class LaunchSmoke {
 				}
 			}
 		};
-		Path log = dir.resolve("game-output.log");
-		try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(log, StandardCharsets.UTF_8), true)) {
-			long start = System.currentTimeMillis();
-			LaunchService.Session session = context.launchService.launch(instance, context.settings.settings(), context.accounts,
-				GameLauncher.QuickPlay.NONE, progress, line -> {
-					writer.println(line);
-					if (line.contains("Vantage") || line.contains("ERROR") || line.contains("Exception")) {
-						System.out.println("[game] " + line);
-					}
-				});
-			System.out.println("[launcher] prepared and started in " + (System.currentTimeMillis() - start) / 1000 + " s");
-			int exit = session.process().waitFor();
-			System.out.println("[launcher] game exited with code " + exit);
-			Thread.sleep(500);
-			System.exit(exit);
-		}
 	}
 }

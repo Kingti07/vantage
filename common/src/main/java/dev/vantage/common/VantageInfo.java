@@ -11,6 +11,8 @@ public final class VantageInfo {
 	public static final String VERSION = BUILD_INFO.getProperty("version", "0.0.0-dev");
 	/** Minecraft version the bundled in-game client mod is built for. */
 	public static final String CLIENT_MINECRAFT_VERSION = BUILD_INFO.getProperty("minecraft_version", "1.21.11");
+	/** Oldest Fabric Loader the bundled client mod runs on. */
+	public static final String CLIENT_MIN_LOADER_VERSION = BUILD_INFO.getProperty("min_loader_version", "0.19.3");
 	/** Loader used by every Vantage instance. */
 	public static final String LOADER = "fabric";
 

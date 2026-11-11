@@ -11,6 +11,7 @@ import dev.vantage.launcher.ui.pages.AccountsPage;
 import dev.vantage.launcher.ui.pages.ConsolePage;
 import dev.vantage.launcher.ui.pages.HomePage;
 import dev.vantage.launcher.ui.pages.InstallationsPage;
+import dev.vantage.launcher.ui.pages.ModpacksPage;
 import dev.vantage.launcher.ui.pages.ModsPage;
 import dev.vantage.launcher.ui.pages.Page;
 import dev.vantage.launcher.ui.pages.SettingsPage;
@@ -60,6 +61,7 @@ public final class MainWindow {
 		pages.put("home", new HomePage(this));
 		pages.put("installations", new InstallationsPage(this));
 		pages.put("mods", new ModsPage(this));
+		pages.put("modpacks", new ModpacksPage(this));
 		pages.put("accounts", new AccountsPage(this));
 		pages.put("settings", new SettingsPage(this));
 		pages.put("console", new ConsolePage(this));
@@ -168,6 +170,7 @@ public final class MainWindow {
 		addNav(sidebar, "home", "Home", Icons.HOME);
 		addNav(sidebar, "installations", "Installations", Icons.LAYERS);
 		addNav(sidebar, "mods", "Mods", Icons.MODS);
+		addNav(sidebar, "modpacks", "Modpacks", Icons.PACKAGE);
 		addNav(sidebar, "accounts", "Accounts", Icons.PERSON);
 		addNav(sidebar, "settings", "Settings", Icons.SETTINGS);
 		addNav(sidebar, "console", "Console", Icons.TERMINAL);
