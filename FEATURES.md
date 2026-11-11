@@ -96,6 +96,8 @@ damage indicators, hit particles). Those are marked "Done (untested live)".
 | Custom hit color | Done | Repaints the entity hurt overlay |
 | Damage indicators | Done (untested live) | Floating numbers (optional healing), through walls |
 | Hitboxes | Done | Own coloured boxes; hittable (server reach rule) in a second colour; replaces F3+B; off with reduced debug info |
+| Session time, server address, deaths, totems, arrows | Done | New HUD elements (2026-11-11) |
+| Warnings | Done | Low health, breaking armour / held item, helpful effects ending |
 
 ### Movement & visual
 | Feature | Status | Notes |
@@ -146,6 +148,7 @@ damage indicators, hit particles). Those are marked "Done (untested live)".
 | Keyboard + mouse, multiple keys per action, removal | Done | |
 | Conflict detection | Done | Against other Vantage binds and all Minecraft/mod key mappings |
 | Searchable list, auto-save | Done | |
+| Visual keyboard | Done | ISO keyboard + mouse buttons; system layout labels; bind Vantage, Minecraft and mod actions per key |
 
 ## 7. Modrinth integration (launcher and in-game)
 | Requirement | Status | Notes |
@@ -156,6 +159,8 @@ damage indicators, hit particles). Those are marked "Done (untested live)".
 | Sort by relevance/downloads/popularity/newest/updated | Done | |
 | One-click install, automatic dependencies, compatibility checks | Done | Live-tested: Mod Menu pulled in Fabric API + Text Placeholder API |
 | Updates, removal, enable/disable, installed versions | Done | Changes to loaded jars are queued and applied before the next launch |
+| Modpacks | Done | Modrinth search, version choice, contents preview, install as new installation, `.mrpack` import; Fabric and vanilla packs only. Live-tested with Fabulously Optimized |
+| Resource packs and shaders | Done | Installed into the installation's folders; shaders offer Iris |
 | Incompatible mods / dependency conflicts / installation errors | Done | fabric.mod.json analysis (game version, missing/incorrect deps, `breaks`, duplicates, wrong loader) + Modrinth incompatibility declarations; failed installs roll back |
 
 ## 8–11. Multiplayer, settings, cosmetics, UI
@@ -165,4 +170,7 @@ damage indicators, hit particles). Those are marked "Done (untested live)".
 | Settings hub (general, video, performance, PvP, HUD, keybinds, mods, audio, launcher, account) | Done |
 | Themes, menu backgrounds, UI colours, GUI scale, fonts, HUD style presets, profiles | Done (fonts limited to Minecraft + Unifont) |
 | Capes (7), hats (5) and shoulder pets (5 parrots, bee) for your own player, with a turning preview | Done (only visible to you) |
+| Profiles per server, profile copy/paste | Done (server switching untested live) |
+| Chat timestamps, stacked repeats, longer history; death coordinates | Done |
+| Practice: CPS test, reaction test | Done |
 | Consistent dark design across launcher and game | Done |

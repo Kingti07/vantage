@@ -118,5 +118,18 @@ das, was nur ein Mensch am echten PC prüfen kann. Hake jeden Punkt ab und notie
 | 12.4 | Einen Helm aufsetzen | Der Hut verschwindet (außer „Hide hat under helmet“ ist aus). |
 | 12.5 | Einen Freund fragen, ob er deinen Umhang sieht | Nein: Die Cosmetics sieht nur, wer sie eingestellt hat. |
 
+## 13. Modpacks, Tastatur und neue Funktionen
+| # | Was du tust | Erwartetes Ergebnis |
+|---|---|---|
+| 13.1 | Launcher → **Modpacks** → „Fabulously Optimized“ → Install → Version wählen → Continue | Ein Fenster zeigt Minecraft-Version, Anzahl Mods, Configs und optionale Dateien. |
+| 13.2 | Dort „Install“ | Eine neue Installation mit dem Pack-Bild erscheint unter Installations. „Play“ startet das Pack mit Vantage. |
+| 13.3 | Installation abbrechen (Cancel in der Leiste unten) | Die halbe Installation verschwindet wieder. |
+| 13.4 | Modpacks → „Import .mrpack file“ mit einer heruntergeladenen `.mrpack`-Datei | Gleiches Fenster wie 13.1. |
+| 13.5 | Mods → Browse → Typ „Shaders“ → ein Shader → Install | Hinweis, wo man ihn einschaltet; ohne Iris kommt das Angebot „Install Iris“. |
+| 13.6 | Im Spiel: Einstellungen → Keybinds | Tastatur mit deinem Layout; belegte Tasten sind farbig. Taste drücken → sie ist ausgewählt; rechts „Add“/„Set“ belegt sie. |
+| 13.7 | Auf einem Server: Cosmetics → „Use on this server“, Server verlassen und neu betreten | Beim Betreten steht „Vantage: using profile …“ im Chat, beim Verlassen ist das alte Profil zurück. |
+| 13.8 | Dieselbe Chat-Nachricht mehrmals bekommen | Sie steht nur einmal da, mit „(x2)“, „(x3)“ … und Uhrzeit davor. |
+| 13.9 | Sterben | Im Chat steht, wo du gestorben bist. |
+
 ## Nicht auf Windows getestet (bitte auf macOS und Linux wiederholen)
 Punkte 1, 2.4 (Schlüssel im macOS-Schlüsselbund bzw. Linux-Schlüsselbund statt `token-key.dpapi`), 3 und 4.

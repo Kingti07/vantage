@@ -3,6 +3,30 @@
 All notable changes to Vantage. Versions follow [Semantic Versioning](https://semver.org); IDs such as F1 or S2 refer
 to the findings in [AUDIT.md](AUDIT.md).
 
+## Unreleased (branch feature/modpacks-keyboard)
+
+A comparison with the feature lists of other clients is in [FEATURE-VERGLEICH.md](FEATURE-VERGLEICH.md) (German).
+
+### Launcher
+- **Modpacks:** a new Modpacks page searches Modrinth modpacks, shows what a version contains and installs it as a new
+  installation: mods, configs, options, resource packs and shader packs. Local `.mrpack` files can be imported.
+  Downloads only come from the hosts Modrinth allows, every file is checked by SHA-1, and no file can be written
+  outside the installation. A failed or cancelled install leaves nothing behind. Tested with Fabulously Optimized
+  12.3.0 (48 mods) through `launchSmoke -PsmokeModpack=fabulously-optimized`.
+- Forge, NeoForge and Quilt modpacks are listed on request but cannot be installed yet.
+- **Resource packs and shaders** in Mods → Browse (type switch). Shaders offer to install Iris.
+- The client mod now accepts Fabric Loader 0.19.3 and newer (it required exactly the development version 0.20.1
+  before). Modpacks pinning an older loader get 0.19.3 when the Vantage client is added.
+
+### In-game client
+- **Keyboard screen** (Settings → Keybinds): a picture of the keyboard with mouse buttons. Click or press a key to
+  see what it does and to bind any Vantage, Minecraft or mod action to it. Labels follow the system keyboard layout.
+- New HUD elements: session time, server address, death counter, totem counter, arrow counter, warnings (low health,
+  breaking armour or held item, effects ending).
+- New Utility category: Death Coordinates and Chat Tweaks (timestamps, stacked repeated messages, history up to 2000).
+- Profiles can be linked to a server (used automatically while you play there) and copied/pasted as text.
+- Practice screen: CPS test and reaction test with personal bests.
+
 ## 0.2.0 – release date: the day Microsoft approves sign-in (see LAUNCH.md)
 
 The first release meant for everyone: a complete overhaul of the launcher and a large frame-rate boost.
