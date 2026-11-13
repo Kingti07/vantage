@@ -13,7 +13,11 @@ A comparison with the feature lists of other clients is in [FEATURE-VERGLEICH.md
   Downloads only come from the hosts Modrinth allows, every file is checked by SHA-1, and no file can be written
   outside the installation. A failed or cancelled install leaves nothing behind. Tested with Fabulously Optimized
   12.3.0 (48 mods) through `launchSmoke -PsmokeModpack=fabulously-optimized`.
-- Forge, NeoForge and Quilt modpacks are listed on request but cannot be installed yet.
+- **Import from the Modrinth App:** profiles of the Modrinth App on the same computer are listed with their name,
+  Minecraft and loader version and icon, and copied into a new installation (worlds optional). The app's own
+  profiles are never changed. The data comes from a copy of the app's database, read by a small built-in read-only
+  SQLite reader (no new dependency); without it, the version line of the profile's last game log is used.
+- Forge, NeoForge and Quilt modpacks and profiles are listed but cannot be installed yet.
 - **Resource packs and shaders** in Mods → Browse (type switch). Shaders offer to install Iris.
 - The client mod now accepts Fabric Loader 0.19.3 and newer (it required exactly the development version 0.20.1
   before). Modpacks pinning an older loader get 0.19.3 when the Vantage client is added.

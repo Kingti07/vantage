@@ -160,6 +160,7 @@ damage indicators, hit particles). Those are marked "Done (untested live)".
 | One-click install, automatic dependencies, compatibility checks | Done | Live-tested: Mod Menu pulled in Fabric API + Text Placeholder API |
 | Updates, removal, enable/disable, installed versions | Done | Changes to loaded jars are queued and applied before the next launch |
 | Modpacks | Done | Modrinth search, version choice, contents preview, install as new installation, `.mrpack` import; Fabric and vanilla packs only. Live-tested with Fabulously Optimized |
+| Modrinth App profiles | Done | Lists the local Modrinth App's profiles (name, versions, icon) and copies one into a new installation; worlds optional; Fabric and vanilla only |
 | Resource packs and shaders | Done | Installed into the installation's folders; shaders offer Iris |
 | Incompatible mods / dependency conflicts / installation errors | Done | fabric.mod.json analysis (game version, missing/incorrect deps, `breaks`, duplicates, wrong loader) + Modrinth incompatibility declarations; failed installs roll back |
 

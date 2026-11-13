@@ -22,7 +22,7 @@ import java.util.List;
 final class UiSnapshots {
 	private static final Logger LOGGER = LoggerFactory.getLogger(UiSnapshots.class);
 	private static final List<String> PAGES = List.of("home", "installations", "installation-editor", "mods", "mods-browse",
-		"mods-performance", "mods-resourcepacks", "mods-shaders", "modpacks", "accounts", "settings", "console");
+		"mods-performance", "mods-resourcepacks", "mods-shaders", "modpacks", "modpacks-import", "accounts", "settings", "console");
 
 	private UiSnapshots() {
 	}
@@ -52,13 +52,14 @@ final class UiSnapshots {
 			case "mods-performance" -> window.<dev.vantage.launcher.ui.pages.ModsPage>page("mods").showPerformance();
 			case "mods-resourcepacks" -> window.<dev.vantage.launcher.ui.pages.ModsPage>page("mods").showBrowse("Resource packs");
 			case "mods-shaders" -> window.<dev.vantage.launcher.ui.pages.ModsPage>page("mods").showBrowse("Shaders");
+			case "modpacks-import" -> window.<dev.vantage.launcher.ui.pages.ModpacksPage>page("modpacks").showModrinthAppImport();
 			case "installation-editor" -> window.<dev.vantage.launcher.ui.pages.InstallationsPage>page("installations").createNew();
 			default -> window.navigate(page);
 		}
-		PauseTransition wait = new PauseTransition(Duration.seconds(page.startsWith("mods") || page.endsWith("editor") || "modpacks".equals(page) ? 5 : 1.5));
+		PauseTransition wait = new PauseTransition(Duration.seconds(page.startsWith("mod") || page.endsWith("editor") ? 5 : 1.5));
 		wait.setOnFinished(e -> {
 			save(window, folder.resolve(String.format("launcher-%02d-%s.png", index, page)));
-			if (page.endsWith("editor")) {
+			if (page.endsWith("editor") || "modpacks-import".equals(page)) {
 				// Close the dialog overlay again before moving on.
 				var root = window.root();
 				if (root.getChildren().size() > 2) {

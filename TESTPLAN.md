@@ -125,6 +125,7 @@ das, was nur ein Mensch am echten PC prüfen kann. Hake jeden Punkt ab und notie
 | 13.2 | Dort „Install“ | Eine neue Installation mit dem Pack-Bild erscheint unter Installations. „Play“ startet das Pack mit Vantage. |
 | 13.3 | Installation abbrechen (Cancel in der Leiste unten) | Die halbe Installation verschwindet wieder. |
 | 13.4 | Modpacks → „Import .mrpack file“ mit einer heruntergeladenen `.mrpack`-Datei | Gleiches Fenster wie 13.1. |
+| 13.4a | Modpacks → „Import from Modrinth App“ | Alle Profile der Modrinth App mit Namen, Version und Bild. „Import“ → Name, Welten ja/nein, Vantage ja/nein → neue Installation; das Profil in der Modrinth App bleibt unverändert. |
 | 13.5 | Mods → Browse → Typ „Shaders“ → ein Shader → Install | Hinweis, wo man ihn einschaltet; ohne Iris kommt das Angebot „Install Iris“. |
 | 13.6 | Im Spiel: Einstellungen → Keybinds | Tastatur mit deinem Layout; belegte Tasten sind farbig. Taste drücken → sie ist ausgewählt; rechts „Add“/„Set“ belegt sie. |
 | 13.7 | Auf einem Server: Cosmetics → „Use on this server“, Server verlassen und neu betreten | Beim Betreten steht „Vantage: using profile …“ im Chat, beim Verlassen ist das alte Profil zurück. |

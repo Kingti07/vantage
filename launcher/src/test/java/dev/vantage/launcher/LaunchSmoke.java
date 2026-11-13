@@ -8,6 +8,7 @@ import dev.vantage.common.util.ProgressListener;
 import dev.vantage.launcher.game.GameLauncher;
 import dev.vantage.launcher.game.LaunchService;
 import dev.vantage.launcher.game.ModpackInstaller;
+import dev.vantage.launcher.game.ModrinthAppImporter;
 import dev.vantage.launcher.settings.Instance;
 
 import java.io.PrintWriter;
@@ -26,7 +27,8 @@ import java.util.UUID;
  * singleplayer, but it cannot join servers. Real players always sign in with Microsoft.
  * <p>
  * Usage: {@code ./gradlew :launcher:launchSmoke -PsmokeDir=<empty folder>}; {@code -PsmokeModpack=<slug>} first installs
- * that Modrinth modpack (newest Fabric version for the client's Minecraft version) into a new installation.
+ * that Modrinth modpack (newest Fabric version for the client's Minecraft version) into a new installation;
+ * {@code -PsmokeImport=<folder>} copies that Modrinth App profile of this computer into a new installation.
  */
 public final class LaunchSmoke {
 	private LaunchSmoke() {
@@ -40,6 +42,9 @@ public final class LaunchSmoke {
 		Instance instance = context.settings.selectedInstance();
 		if (args.length > 2 && !args[2].isBlank()) {
 			instance = installModpack(context, args[2].trim());
+		}
+		if (args.length > 3 && !args[3].isBlank()) {
+			instance = importModrinthProfile(context, args[3].trim());
 		}
 		instance.extraJvmArgs = "-Dvantage.smokeTest=true -Dvantage.mixinAudit=true";
 		instance.memoryMb = 3072;
@@ -92,6 +97,29 @@ public final class LaunchSmoke {
 		}
 	}
 
+	/** Copies a Modrinth App profile (read-only) into a new installation the way the Modpacks page does. */
+	private static Instance importModrinthProfile(LauncherContext context, String folder) throws Exception {
+		Path data = ModrinthAppImporter.findDataDir().orElseThrow(() -> new IllegalStateException("No Modrinth App on this computer"));
+		ModrinthAppImporter.Profile profile = ModrinthAppImporter.profiles(data).stream()
+			.filter(p -> p.folder().getFileName().toString().equals(folder)).findFirst()
+			.orElseThrow(() -> new IllegalStateException("No Modrinth App profile " + folder));
+		Instance instance = context.settings.createInstance(profile.name() + " (imported)", profile.gameVersion());
+		instance.loaderVersion = ModpackInstaller.loaderVersion(profile.loaderVersion(), instance.vantageClient);
+		context.settings.updateInstance(instance);
+		context.settings.select(instance);
+		Path gameDir = instance.resolveGameDirectory(context.paths.instances());
+		long start = System.currentTimeMillis();
+		int files = ModrinthAppImporter.copy(profile, gameDir, false, printer());
+		long mods;
+		try (var list = Files.list(gameDir.resolve("mods"))) {
+			mods = list.filter(p -> p.toString().endsWith(".jar")).count();
+		}
+		System.out.println("[smoke] imported Modrinth App profile " + profile.name() + ": " + files + " files, " + mods + " enabled mods, Minecraft "
+			+ profile.gameVersion() + ", loader " + instance.loaderVersion + ", " + (System.currentTimeMillis() - start) / 1000 + " s");
+		skipOnboarding(gameDir);
+		return instance;
+	}
+
 	/** Installs the newest Fabric version of a Modrinth modpack the way the Modpacks page does. */
 	private static Instance installModpack(LauncherContext context, String slug) throws Exception {
 		var versions = context.modrinth.projectVersions(slug, "fabric", VantageInfo.CLIENT_MINECRAFT_VERSION);
@@ -118,15 +146,19 @@ public final class LaunchSmoke {
 		}
 		System.out.println("[smoke] modpack " + pack.name() + " " + version.versionNumber() + ": " + mods + " mods, " + overrides
 			+ " override files, loader " + instance.loaderVersion + ", " + (System.currentTimeMillis() - start) / 1000 + " s");
-		// The pack's options.txt would show Minecraft's accessibility onboarding; the unattended run skips it.
+		skipOnboarding(gameDir);
+		return instance;
+	}
+
+	/** A copied options.txt would show Minecraft's accessibility onboarding or start in fullscreen; the unattended run avoids both. */
+	private static void skipOnboarding(Path gameDir) throws java.io.IOException {
 		Path options = gameDir.resolve("options.txt");
 		String text = Files.exists(options) ? Files.readString(options, StandardCharsets.UTF_8) : "";
-		if (!text.contains("onboardAccessibility:false")) {
-			String cleaned = text.replace("onboardAccessibility:true", "").stripTrailing();
-			Files.writeString(options, (cleaned.isEmpty() ? "" : cleaned + System.lineSeparator()) + "onboardAccessibility:false"
-				+ System.lineSeparator(), StandardCharsets.UTF_8);
+		String cleaned = text.replace("onboardAccessibility:true", "").replace("fullscreen:true", "fullscreen:false").stripTrailing();
+		if (!cleaned.contains("onboardAccessibility:false")) {
+			cleaned = (cleaned.isEmpty() ? "" : cleaned + System.lineSeparator()) + "onboardAccessibility:false";
 		}
-		return instance;
+		Files.writeString(options, cleaned + System.lineSeparator(), StandardCharsets.UTF_8);
 	}
 
 	private static ProgressListener printer() {

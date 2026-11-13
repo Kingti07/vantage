@@ -108,6 +108,7 @@ gehört ein echter Spielstart mit dem Modpack *Fabulously Optimized*. Was nur ei
 | Ein-Klick-Installation, Abhängigkeiten, Kompatibilitätsprüfung, Konflikte, Updates, „Update all“, an/aus, entfernen | ✅ | |
 | **Modpacks direkt aus Modrinth installieren** (Mods, Configs, Einstellungen, Resource/Shader Packs) | 🆕 | Neue Seite „Modpacks“ im Launcher |
 | `.mrpack`-Datei importieren | 🆕 | „Import .mrpack file“ |
+| **Profile aus der Modrinth App auf dem PC übernehmen** | 🆕 | „Import from Modrinth App“: Name, Versionen und Bild werden erkannt, das Profil wird kopiert (Welten optional) |
 | Resource Packs und Shader aus Modrinth installieren | 🆕 | Mods → Browse → Typ wählen. Iris wird bei Shadern angeboten |
 | Modpack exportieren/teilen, Modpack-Updates | 🗓️ | Nächster sinnvoller Schritt |
 | Forge-, NeoForge-, Quilt-Installationen | 🗓️ | Großer Umbau (siehe oben) |
@@ -209,7 +210,7 @@ gehört ein echter Spielstart mit dem Modpack *Fabulously Optimized*. Was nur ei
 1. **Modpacks aus Modrinth** direkt im Launcher. Suchen, Version wählen, Inhalt ansehen, installieren: Mods, Configs,
    Einstellungen, Resource und Shader Packs. Dazu `.mrpack`-Import. Getestet mit *Fabulously Optimized 12.3.0*
    (48 Mods). Dabei ist ein echter Fehler aufgefallen und behoben worden: Packs mit älterem Fabric Loader starteten
-   mit Vantage nicht.
+   mit Vantage nicht. Dazu kommt der **Import der Profile aus der Modrinth App** auf deinem PC (13.11.2026).
 2. **Resource Packs und Shader** im Launcher-Browser. Bei Shadern wird Iris angeboten.
 3. **Tastatur-Menü** mit allen Tasten, Maustasten und Belegungen. Die Beschriftung kommt vom System, also z. B. das
    Schweizer Layout.

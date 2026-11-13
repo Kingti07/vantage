@@ -89,7 +89,8 @@ tasks.register('launchSmoke', JavaExec) {
 	def dir = project.findProperty('smokeDir') ?: layout.buildDirectory.dir('launch-smoke').get().asFile.absolutePath
 	// -PsmokeMods=sodium,lithium installs extra Modrinth mods first, to test compatibility with them.
 	// -PsmokeModpack=fabulously-optimized installs a Modrinth modpack into a new installation and starts that one.
-	args dir, project.findProperty('smokeMods') ?: '', project.findProperty('smokeModpack') ?: ''
+	// -PsmokeImport=<folder> copies a Modrinth App profile of this computer and starts that one.
+	args dir, project.findProperty('smokeMods') ?: '', project.findProperty('smokeModpack') ?: '', project.findProperty('smokeImport') ?: ''
 }
 
 // Developer FPS benchmark (see LaunchBenchmark): -PbenchDir=<folder> -PbenchProfile=vanilla|pack|vulkan -PbenchSeconds=30

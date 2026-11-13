@@ -101,8 +101,12 @@ public final class ModpackInstaller {
 	 * is added and needs a newer one (Fabric Loader runs mods made for older versions). Empty means "newest stable".
 	 */
 	public static String loaderVersion(MrPack pack, boolean vantageClient) {
-		String wanted = pack.loader() == MrPack.Loader.FABRIC && pack.loaderVersion() != null ? pack.loaderVersion() : "";
-		if (!vantageClient || wanted.isEmpty()) {
+		return loaderVersion(pack.loader() == MrPack.Loader.FABRIC && pack.loaderVersion() != null ? pack.loaderVersion() : "", vantageClient);
+	}
+
+	/** Same rule for any wanted Fabric Loader version (empty = newest stable). */
+	public static String loaderVersion(String wanted, boolean vantageClient) {
+		if (!vantageClient || wanted == null || wanted.isEmpty()) {
 			return wanted;
 		}
 		SemanticVersion packLoader = SemanticVersion.tryParse(wanted);

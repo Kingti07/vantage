@@ -64,12 +64,19 @@ public final class WebImages {
 		}
 		POOL.submit(() -> {
 			try {
-				HttpRequest request = Http.request(URI.create(url)).timeout(Duration.ofSeconds(20)).GET().build();
-				HttpResponse<byte[]> response = Http.client().send(request, HttpResponse.BodyHandlers.ofByteArray());
-				if (response.statusCode() != 200) {
-					return;
+				byte[] bytes;
+				if (url.startsWith("file:")) {
+					// Local icons, e.g. of profiles imported from the Modrinth App.
+					bytes = java.nio.file.Files.readAllBytes(java.nio.file.Path.of(URI.create(url)));
+				} else {
+					HttpRequest request = Http.request(URI.create(url)).timeout(Duration.ofSeconds(20)).GET().build();
+					HttpResponse<byte[]> response = Http.client().send(request, HttpResponse.BodyHandlers.ofByteArray());
+					if (response.statusCode() != 200) {
+						return;
+					}
+					bytes = response.body();
 				}
-				Image image = toFx(ImageDecoder.decode(response.body(), maxSize));
+				Image image = toFx(ImageDecoder.decode(bytes, maxSize));
 				synchronized (CACHE) {
 					CACHE.put(key, image);
 				}

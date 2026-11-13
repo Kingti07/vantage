@@ -31,7 +31,8 @@ More documents: [FEATURES.md](FEATURES.md) (feature tracker), [TODO.md](TODO.md)
 * **Mods:** Modrinth search, details, one-click installs with dependency and compatibility checks, updates,
   enable/disable/remove, own jars, performance pack. Resource packs and shaders (with Iris) from the same browser.
 * **Modpacks:** install any Fabric modpack from Modrinth, or a `.mrpack` file, as a new installation – mods, configs,
-  options, resource and shader packs included, every download verified.
+  options, resource and shader packs included, every download verified. Profiles of the Modrinth App on the same
+  computer can be imported (copied) too.
 * **Console and crashes:** readable, coloured game output with search and a "problems only" filter; after a crash the
   start of the crash report is shown with Copy / Open file.
 * **Self-update:** new versions from GitHub Releases are verified with their SHA-256 checksum; if a new version does

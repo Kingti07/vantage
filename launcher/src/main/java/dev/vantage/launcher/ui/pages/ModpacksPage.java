@@ -11,6 +11,7 @@ import dev.vantage.common.modrinth.model.ModrinthModels.Version;
 import dev.vantage.common.util.CancelledException;
 import dev.vantage.common.util.FileUtil;
 import dev.vantage.launcher.game.ModpackInstaller;
+import dev.vantage.launcher.game.ModrinthAppImporter;
 import dev.vantage.launcher.settings.Instance;
 import dev.vantage.launcher.ui.Icons;
 import dev.vantage.launcher.ui.MainWindow;
@@ -92,9 +93,11 @@ public final class ModpacksPage implements Page {
 
 		Button importFile = Ui.button("Import .mrpack file", Icons.FOLDER, "ghost");
 		importFile.setOnAction(e -> importFile());
+		Button fromApp = Ui.button("Import from Modrinth App", Icons.LAYERS, "ghost");
+		fromApp.setOnAction(e -> importFromModrinthApp());
 		HBox header = Ui.row(12, new VBox(4, Ui.label("Modpacks", "h1"),
 				Ui.label("Install a complete modpack from Modrinth: mods, configs, settings, resource and shader packs.", "muted")),
-			Ui.spacer(), importFile);
+			Ui.spacer(), fromApp, importFile);
 
 		search.setPromptText("Search modpacks on Modrinth");
 		search.getStyleClass().add("search-field");
@@ -469,6 +472,202 @@ public final class ModpacksPage implements Page {
 				Overlay.message("Installation failed", Ui.message(err) + "\n\nThe unfinished installation was removed.");
 			}
 		});
+	}
+
+	// ------------------------------------------------------------------------------------------------ Modrinth App
+
+	/** Opens the list of Modrinth App profiles (also used by the UI snapshots). */
+	public void showModrinthAppImport() {
+		importFromModrinthApp();
+	}
+
+	/** Lists the profiles of the Modrinth App on this computer. */
+	private void importFromModrinthApp() {
+		var task = window.taskBar().begin("Looking for Modrinth App profiles");
+		Ui.async(() -> {
+			Path dir = ModrinthAppImporter.findDataDir()
+				.orElseThrow(() -> new IOException("The Modrinth App was not found on this computer."));
+			return ModrinthAppImporter.profiles(dir);
+		}, profiles -> {
+			task.finish();
+			showProfiles(profiles);
+		}, err -> {
+			task.finish();
+			Overlay.error("Cannot read the Modrinth App", err);
+		});
+	}
+
+	private static Node profileIcon(ModrinthAppImporter.Profile profile, int size) {
+		if (profile.icon() != null) {
+			ImageView icon = WebImages.rounded(size, size / 4.0);
+			WebImages.load(icon, profile.icon().toUri().toString(), size * 2);
+			return icon;
+		}
+		// Profiles without their own picture get the same placeholder as installations.
+		Node symbol = Icons.of(Icons.LAYERS, size * 0.55);
+		symbol.lookupAll(".icon").forEach(n -> n.setStyle("-fx-fill: -v-muted;"));
+		StackPane box = new StackPane(symbol);
+		box.setMinSize(size, size);
+		box.setPrefSize(size, size);
+		box.setMaxSize(size, size);
+		box.getStyleClass().add("inset");
+		return box;
+	}
+
+	private void showProfiles(List<ModrinthAppImporter.Profile> profiles) {
+		VBox dialog = new VBox(12);
+		dialog.getStyleClass().add("dialog");
+		dialog.getChildren().addAll(Ui.label("Import from the Modrinth App", "h2"),
+			wrapped(Ui.label("Vantage copies the profile into a new installation. Your Modrinth App profiles stay exactly as they are.", "muted")));
+		Runnable[] close = new Runnable[1];
+		if (profiles.isEmpty()) {
+			dialog.getChildren().add(Ui.label("The Modrinth App has no profiles yet.", "muted"));
+		}
+		for (ModrinthAppImporter.Profile profile : profiles) {
+			Label details = Ui.label(profile.gameVersion() == null ? "Minecraft version unknown"
+				: "Minecraft " + profile.gameVersion() + " · " + profile.loaderLabel() + (profile.loaderVersion() == null ? "" : " " + profile.loaderVersion()),
+				"small", "muted");
+			VBox text = new VBox(2, Ui.label(profile.name(), "h3"), details);
+			if (profile.problem() != null) {
+				text.getChildren().add(wrapped(Ui.label(profile.problem(), "small", "warning-text")));
+			}
+			HBox.setHgrow(text, Priority.ALWAYS);
+			Button importButton = Ui.button("Import", Icons.DOWNLOAD, "primary");
+			importButton.setDisable(profile.problem() != null);
+			importButton.setOnAction(e -> {
+				close[0].run();
+				confirmProfile(profile);
+			});
+			HBox row = new HBox(12, profileIcon(profile, 40), text, importButton);
+			row.setAlignment(Pos.CENTER_LEFT);
+			row.getStyleClass().add("inset");
+			dialog.getChildren().add(row);
+		}
+		Button cancel = Ui.button("Close", null, "ghost");
+		dialog.getChildren().add(new HBox(10, Ui.spacer(), cancel));
+		close[0] = Overlay.show(scrolling(dialog), 620);
+		cancel.setOnAction(e -> close[0].run());
+	}
+
+	private record ProfileSizes(long withoutWorlds, long withWorlds) {
+	}
+
+	private void confirmProfile(ModrinthAppImporter.Profile profile) {
+		Ui.async(() -> new ProfileSizes(ModrinthAppImporter.size(profile, false), ModrinthAppImporter.size(profile, true)),
+			sizes -> showProfileConfirm(profile, sizes), err -> showProfileConfirm(profile, new ProfileSizes(0, 0)));
+	}
+
+	private void showProfileConfirm(ModrinthAppImporter.Profile profile, ProfileSizes sizes) {
+		VBox dialog = new VBox(14);
+		dialog.getStyleClass().add("dialog");
+		dialog.getChildren().add(Ui.row(12, profileIcon(profile, 48), new VBox(2, Ui.label("Import " + profile.name(), "h2"),
+			Ui.label("Minecraft " + profile.gameVersion() + " · " + profile.loaderLabel()
+				+ (profile.loaderVersion() == null ? "" : " " + profile.loaderVersion()) + " · from the Modrinth App", "muted"))));
+		dialog.getChildren().add(wrapped(Ui.label("Copies mods, configs, settings, resource packs, shader packs, servers and screenshots ("
+			+ FileUtil.humanSize(sizes.withoutWorlds()) + "). Logs and caches are left out.", "small")));
+
+		TextField name = new TextField(profile.name());
+		dialog.getChildren().addAll(Ui.label("Installation name", "small", "muted"), name);
+
+		long worldsSize = sizes.withWorlds() - sizes.withoutWorlds();
+		ToggleSwitch worlds = new ToggleSwitch(false);
+		if (worldsSize > 0) {
+			dialog.getChildren().add(Ui.row(10, Ui.label("Also copy the worlds (" + FileUtil.humanSize(worldsSize) + " more)", "small"), Ui.spacer(), worlds));
+		}
+
+		boolean vantagePossible = VantageInfo.CLIENT_MINECRAFT_VERSION.equals(profile.gameVersion());
+		ToggleSwitch vantage = new ToggleSwitch(vantagePossible);
+		if (vantagePossible) {
+			dialog.getChildren().add(Ui.row(10, Ui.label("Add the Vantage PvP client (HUD, zoom, keybinds …)", "small"), Ui.spacer(), vantage));
+		} else {
+			dialog.getChildren().add(wrapped(Ui.label("The Vantage PvP features need Minecraft " + VantageInfo.CLIENT_MINECRAFT_VERSION
+				+ ". This profile runs without them.", "small", "warning-text")));
+		}
+
+		long totalMb = totalMemoryMb();
+		Slider memory = new Slider(2048, Math.max(4096, Math.min(totalMb - 1024, 32768)), defaultMemory(totalMb));
+		HBox.setHgrow(memory, Priority.ALWAYS);
+		Label memoryLabel = Ui.label("", "h3");
+		memoryLabel.setMinWidth(80);
+		Runnable updateMemory = () -> memoryLabel.setText(String.format(Locale.ROOT, "%.2f GB", Math.round(memory.getValue() / 256) * 256 / 1024.0));
+		memory.valueProperty().addListener((o, a, b) -> updateMemory.run());
+		updateMemory.run();
+		dialog.getChildren().addAll(Ui.label("Memory", "small", "muted"), Ui.row(12, memory, memoryLabel));
+
+		Button cancel = Ui.button("Cancel", null, "ghost");
+		Button install = Ui.button("Import", Icons.DOWNLOAD, "primary");
+		dialog.getChildren().add(new HBox(10, Ui.spacer(), cancel, install));
+		Runnable close = Overlay.show(scrolling(dialog), 600);
+		cancel.setOnAction(e -> close.run());
+		install.setOnAction(e -> {
+			close.run();
+			String chosenName = name.getText().isBlank() ? profile.name() : name.getText().strip();
+			installProfile(profile, chosenName, worlds.isSelected(), vantagePossible && vantage.isSelected(),
+				(int) (Math.round(memory.getValue() / 256) * 256));
+		});
+	}
+
+	/** Creates the installation and copies the profile into it; on failure nothing is left behind. */
+	private void installProfile(ModrinthAppImporter.Profile profile, String name, boolean worlds, boolean vantageClient, int memoryMb) {
+		var settings = window.context().settings;
+		Instance instance = settings.createInstance(name, profile.gameVersion());
+		instance.vantageClient = vantageClient && instance.supportsVantageClient();
+		instance.loaderVersion = "fabric".equals(profile.loader()) ? ModpackInstaller.loaderVersion(profile.loaderVersion(), instance.vantageClient) : "";
+		// The profile keeps exactly its own mods.
+		instance.performanceMods = false;
+		instance.performanceModsInstalled = false;
+		instance.offerPerformanceMods = false;
+		instance.memoryMb = memoryMb;
+		Path iconCopy = profile.icon() == null ? null : window.context().paths.root().resolve("icons").resolve(instance.id + ".png");
+		if (iconCopy != null) {
+			instance.iconUrl = iconCopy.toUri().toString();
+		}
+		settings.updateInstance(instance);
+		Path gameDir = instance.resolveGameDirectory(window.context().paths.instances());
+		var task = window.taskBar().begin("Importing " + name, true);
+		Ui.async(() -> {
+			int files = ModrinthAppImporter.copy(profile, gameDir, worlds, task);
+			if (iconCopy != null) {
+				Files.createDirectories(iconCopy.getParent());
+				Files.copy(profile.icon(), iconCopy, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+			}
+			return files;
+		}, files -> {
+			task.finish();
+			settings.select(instance);
+			Toasts.success("Imported " + name + " (" + files + " files). Press Play to start it.");
+			window.navigate("installations");
+		}, err -> {
+			task.finish();
+			settings.deleteInstance(instance);
+			Ui.background(() -> {
+				try {
+					FileUtil.deleteRecursively(gameDir);
+				} catch (IOException e) {
+					// A leftover folder is harmless; it is not listed as an installation any more.
+				}
+			});
+			if (!(err instanceof CancelledException)) {
+				Overlay.message("Import failed", Ui.message(err) + "\n\nThe unfinished installation was removed.");
+			}
+		});
+	}
+
+	private static Label wrapped(Label label) {
+		label.setWrapText(true);
+		label.setMaxWidth(540);
+		return label;
+	}
+
+	private static Node scrolling(VBox dialog) {
+		ScrollPane scroll = new ScrollPane(dialog);
+		scroll.setFitToWidth(true);
+		scroll.setMaxHeight(640);
+		VBox wrapper = new VBox(scroll);
+		wrapper.getStyleClass().add("dialog");
+		wrapper.setStyle("-fx-padding: 0;");
+		dialog.setStyle("-fx-effect: null; -fx-border-width: 0;");
+		return wrapper;
 	}
 
 	/** Deletes a downloaded pack file from the cache (never a file the user picked). */
